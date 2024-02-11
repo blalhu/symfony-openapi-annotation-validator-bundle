@@ -8,3 +8,6 @@
 !/DependencyInjection
 !/Resources
 !/Tests
+/vendor/
+
+!/composer.*

@@ -1,0 +1,21 @@
+{
+    "name": "pelso/openapi-validator-bundle",
+    "description": "OpenAPI validator Bundle for Symfony",
+    "type": "library",
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.0"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Pelso\\OpenapiValidatorBundle\\": "./"
+        }
+    },
+    "authors": [
+        {
+            "name": "Kornel Balatoni"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
