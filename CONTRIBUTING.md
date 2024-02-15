@@ -31,4 +31,18 @@ docker run -it --user=root --volume ./:/home/app/docroot pelso/php-dev-xdebug:5.
 
 (or with another container having a composer)
 
+### Tests
 
+Run the unit tests:
+
+```shell
+./vendor/bin/phpunit --testdox
+```
+
+or if you don't have php installed:
+
+```shell
+docker run -it --user=root --volume ./:/home/app/docroot pelso/php-dev-xdebug:5.6 ./vendor/bin/phpunit --testdox
+```
+
+(or with another container having a composer)

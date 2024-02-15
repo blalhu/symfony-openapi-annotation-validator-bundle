@@ -11,5 +11,6 @@
 !/Tests
 !/Service
 /vendor/
+!/phpunit.xml
 
 !/composer.*
