@@ -4,10 +4,12 @@
 !/README.md
 !/CONTRIBUTING.md
 !/LICENSE
+!/PelsoOpenAPIValidatorBundle.php
 !/Controller
 !/DependencyInjection
 !/Resources
 !/Tests
+!/Service
 /vendor/
 
 !/composer.*
