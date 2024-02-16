@@ -1,9 +1,16 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build-test:
+  tests:
+    name: Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -16,3 +23,18 @@ jobs:
         run: composer install
       - name: Run tests
         run: vendor/bin/phpunit --testdox
+
+  php-cs:
+    name: Code fixer
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 5.6
+      - name: Install composer packages
+        run: composer install
+      - name: Check for PSR2 compliance
+        run: vendor/bin/phpcbf --standard=PSR2 --ignore=vendor ./
