@@ -12,5 +12,6 @@
 !/Service
 /vendor/
 !/phpunit.xml
+!/.github
 
 !/composer.*
