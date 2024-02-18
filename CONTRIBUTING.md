@@ -26,7 +26,7 @@ vendor/bin/phpcbf --standard=PSR2 --ignore=vendor ./
 or if you don't have php installed:
 
 ```shell
-docker run -it --user=root --volume ./:/home/app/docroot pelso/php-dev-xdebug:5.6 vendor/bin/phpcbf --standard=PSR2 --ignore=vendor ./
+docker run -it --user=root --volume ./:/home/app/docroot pelso/php-dev-xdebug:7.2 vendor/bin/phpcbf --standard=PSR2 --ignore=vendor ./
 ```
 
 (or with another container having a composer)
@@ -42,7 +42,7 @@ Run the unit tests:
 or if you don't have php installed:
 
 ```shell
-docker run -it --user=root --volume ./:/home/app/docroot pelso/php-dev-xdebug:5.6 ./vendor/bin/phpunit --testdox
+docker run -it --user=root --volume ./:/home/app/docroot pelso/php-dev-xdebug:7.2 ./vendor/bin/phpunit --testdox
 ```
 
 (or with another container having a composer)

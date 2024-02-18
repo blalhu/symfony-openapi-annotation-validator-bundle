@@ -4,7 +4,8 @@
     "description": "OpenAPI validator Bundle for Symfony",
     "type": "symfony-bundle",
     "require": {
-        "php": ">=5.6",
+        "php": ">=7.2",
+        "ext-json": "*",
         "symfony/framework-bundle": "2.7.*"
     },
     "require-dev": {
