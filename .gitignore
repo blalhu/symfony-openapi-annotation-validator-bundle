@@ -15,6 +15,7 @@
 !/Tests
 !/Service
 /vendor/
+!/Validator
 !/phpunit.xml
 !/.github
 
