@@ -5,6 +5,7 @@
 !/CONTRIBUTING.md
 !/LICENSE
 !/PelsoOpenAPIValidatorBundle.php
+!/Collection
 !/Controller
 !/DependencyInjection
 !/Exceptions
