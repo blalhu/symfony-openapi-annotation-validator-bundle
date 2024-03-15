@@ -5,6 +5,8 @@
 !/CONTRIBUTING.md
 !/LICENSE
 !/PelsoOpenAPIValidatorBundle.php
+!/Action
+!/Annotation
 !/Collection
 !/Controller
 !/DependencyInjection
@@ -17,6 +19,9 @@
 /vendor/
 !/Validator
 !/phpunit.xml
+!/coverage/
+/coverage/*
+!/coverage/.gitkeep
 !/.github
 
 !/composer.*
