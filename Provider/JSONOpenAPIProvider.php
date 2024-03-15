@@ -4,6 +4,7 @@ namespace Pelso\OpenAPIValidatorBundle\Provider;
 
 use cebe\openapi\exceptions\TypeErrorException;
 use League\OpenAPIValidation\PSR7\ValidatorBuilder;
+use Pelso\OpenAPIValidatorBundle\Exceptions\ResourceParseError;
 use Pelso\OpenAPIValidatorBundle\Provider\OpenAPIProviderInterface;
 
 class JSONOpenAPIProvider extends AbstractOpenAPIProvider implements OpenAPIProviderInterface
@@ -16,7 +17,7 @@ class JSONOpenAPIProvider extends AbstractOpenAPIProvider implements OpenAPIProv
     {
         $openAPIArray = json_decode($openAPIContent, true);
         if ($openAPIArray === null && json_last_error() !== JSON_ERROR_NONE) {
-            throw new \ParseError('Cannot parse yaml content!');
+            throw new ResourceParseError('Cannot parse json content!');
         }
 
         parent::__construct($openAPIArray);

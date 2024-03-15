@@ -4,7 +4,9 @@ namespace Pelso\OpenAPIValidatorBundle\Provider;
 
 use cebe\openapi\exceptions\TypeErrorException;
 use League\OpenAPIValidation\PSR7\ValidatorBuilder;
+use Pelso\OpenAPIValidatorBundle\Exceptions\ResourceParseError;
 use Pelso\OpenAPIValidatorBundle\Provider\OpenAPIProviderInterface;
+use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 class YAMLOpenAPIProvider extends AbstractOpenAPIProvider implements OpenAPIProviderInterface
@@ -15,10 +17,18 @@ class YAMLOpenAPIProvider extends AbstractOpenAPIProvider implements OpenAPIProv
      */
     public function __construct(string $openAPIContent)
     {
-        parent::__construct(
-            Yaml::parse(
-                $openAPIContent
-            )
-        );
+        try {
+            parent::__construct(
+                Yaml::parse(
+                    $openAPIContent
+                )
+            );
+        } catch (ParseException $exception) {
+            throw new ResourceParseError(
+                'Cannot parse yaml content!',
+                $exception->getCode(),
+                $exception
+            );
+        }
     }
 }

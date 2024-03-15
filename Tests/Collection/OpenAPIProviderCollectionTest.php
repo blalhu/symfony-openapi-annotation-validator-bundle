@@ -10,9 +10,13 @@ use PHPUnit\Framework\TestCase;
 
 class OpenAPIProviderCollectionTest extends TestCase
 {
-    public function testDuplicationAvoidance(): void
+    private $provider;
+
+    protected function setUp()
     {
-        $provider = new class implements OpenAPIProviderInterface
+        parent::setUp();
+
+        $this->provider = new class implements OpenAPIProviderInterface
         {
 
             public function getArray(): array
@@ -25,10 +29,31 @@ class OpenAPIProviderCollectionTest extends TestCase
                 return new ValidatorBuilder();
             }
         };
+    }
 
+    public function testDuplicationAvoidance(): void
+    {
         $this->expectException(ProviderNameAlreadyTakenException::class);
         (new OpenAPIProviderCollection())
-            ->add('foo', $provider)
-            ->add('foo', $provider);
+            ->add('foo', $this->provider)
+            ->add('foo', $this->provider);
+    }
+
+    public function testGetter(): void
+    {
+        $collection = (new OpenAPIProviderCollection())
+            ->add('p1', $this->provider)
+            ->add('p2', $this->provider);
+
+        $this->assertEquals($this->provider, $collection->get('p1'));
+    }
+
+    public function testAllGetter(): void
+    {
+        $collection = (new OpenAPIProviderCollection())
+            ->add('p1', $this->provider)
+            ->add('p2', $this->provider);
+
+        $this->assertEquals(2, count($collection->getAll()));
     }
 }
