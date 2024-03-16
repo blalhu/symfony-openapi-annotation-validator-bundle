@@ -15,7 +15,7 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
         $configuration = new BundleConfiguration();
         $configs = $this->processConfiguration($configuration, $configs);
 
-        $container = $this->defineRequestInterceptor($configs, $container);
+        $container = $this->defineRequestInterceptor($configs, $container); //TODO: check interface implementations!
         $container = $this->defineValidator($configs, $container);
         $container = $this->defineProviderCollection($configs, $container);
     }
