@@ -23,13 +23,11 @@ class PelsoOpenAPIValidatorBundleExtensionTest extends TestCase
         $containerBuilder = new ContainerBuilder();
         (new PelsoOpenAPIValidatorBundleExtension())->load(
             [
-                'pelso' => [
-                    'openapi_validator' => [
-                        'interceptor' => '@app.api_interceptor',
-                        'validator' => '@app.api_validator',
-                        'definition_provider_collection' => '@app.api_provider_collection',
-                    ]
-                ]
+                'pelso_open_api_validator_bundle' => [
+                    'interceptor' => '@app.api_interceptor',
+                    'validator' => '@app.api_validator',
+                    'definition_provider_collection' => '@app.api_provider_collection',
+                ],
             ],
             $containerBuilder
         );

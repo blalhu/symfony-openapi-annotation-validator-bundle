@@ -20,12 +20,12 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
         $container = $this->defineProviderCollection($configs, $container);
     }
 
-    private function defineRequestInterceptor(array $configs, ContainerBuilder $container)
+    private function defineRequestInterceptor(array $configs, ContainerBuilder $container): ContainerBuilder
     {
-        if ($configs['openapi_validator']['interceptor'] !== '@' . BundleConfiguration::REQUEST_INTERCEPTOR) {
+        if ($configs['interceptor'] !== '@' . BundleConfiguration::REQUEST_INTERCEPTOR) {
             $container->setAlias(
                 BundleConfiguration::REQUEST_INTERCEPTOR,
-                preg_replace('/^\@/', '', $configs['openapi_validator']['interceptor'])
+                preg_replace('/^\@/', '', $configs['interceptor'])
             );
         } else {
             $container
@@ -39,10 +39,10 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
 
     private function defineValidator(array $configs, ContainerBuilder $container): ContainerBuilder
     {
-        if ($configs['openapi_validator']['validator'] !== '@' . BundleConfiguration::VALIDATOR) {
+        if ($configs['validator'] !== '@' . BundleConfiguration::VALIDATOR) {
             $container->setAlias(
                 BundleConfiguration::VALIDATOR,
-                preg_replace('/^\@/', '', $configs['openapi_validator']['validator'])
+                preg_replace('/^\@/', '', $configs['validator'])
             );
         } else {
             $container
@@ -55,10 +55,10 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
 
     private function defineProviderCollection(array $configs, ContainerBuilder $container): ContainerBuilder
     {
-        if ($configs['openapi_validator']['definition_provider_collection'] !== '@' . BundleConfiguration::PROVIDER_COLLECTION) {
+        if ($configs['definition_provider_collection'] !== '@' . BundleConfiguration::PROVIDER_COLLECTION) {
             $container->setAlias(
                 BundleConfiguration::PROVIDER_COLLECTION,
-                preg_replace('/^\@/', '', $configs['openapi_validator']['definition_provider_collection'])
+                preg_replace('/^\@/', '', $configs['definition_provider_collection'])
             );
         } else {
             $container
