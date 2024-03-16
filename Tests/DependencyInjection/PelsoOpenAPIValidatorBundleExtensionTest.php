@@ -17,4 +17,25 @@ class PelsoOpenAPIValidatorBundleExtensionTest extends TestCase
             $containerBuilder->has('pelso.openapi_validator_bundle.request_interceptor')
         );
     }
+
+    public function testOverriddenServiceRegister(): void
+    {
+        $containerBuilder = new ContainerBuilder();
+        (new PelsoOpenAPIValidatorBundleExtension())->load(
+            [
+                'pelso' => [
+                    'openapi_validator' => [
+                        'interceptor' => '@app.api_interceptor',
+                        'validator' => '@app.api_validator',
+                        'definition_provider_collection' => '@app.api_provider_collection',
+                    ]
+                ]
+            ],
+            $containerBuilder
+        );
+
+        $this->assertTrue(
+            $containerBuilder->has('pelso.openapi_validator_bundle.request_interceptor')
+        );
+    }
 }
