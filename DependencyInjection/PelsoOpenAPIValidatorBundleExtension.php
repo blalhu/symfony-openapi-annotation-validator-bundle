@@ -24,8 +24,8 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
     {
         if ($configs['openapi_validator']['interceptor'] !== '@' . BundleConfiguration::REQUEST_INTERCEPTOR) {
             $container->setAlias(
-                $configs['openapi_validator']['interceptor'],
-                BundleConfiguration::REQUEST_INTERCEPTOR
+                BundleConfiguration::REQUEST_INTERCEPTOR,
+                preg_replace('/^\@/', '', $configs['openapi_validator']['interceptor'])
             );
         } else {
             $container
@@ -41,8 +41,8 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
     {
         if ($configs['openapi_validator']['validator'] !== '@' . BundleConfiguration::VALIDATOR) {
             $container->setAlias(
-                $configs['openapi_validator']['validator'],
-                BundleConfiguration::VALIDATOR
+                BundleConfiguration::VALIDATOR,
+                preg_replace('/^\@/', '', $configs['openapi_validator']['validator'])
             );
         } else {
             $container
@@ -57,8 +57,8 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
     {
         if ($configs['openapi_validator']['definition_provider_collection'] !== '@' . BundleConfiguration::PROVIDER_COLLECTION) {
             $container->setAlias(
-                $configs['openapi_validator']['definition_provider_collection'],
-                BundleConfiguration::PROVIDER_COLLECTION
+                BundleConfiguration::PROVIDER_COLLECTION,
+                preg_replace('/^\@/', '', $configs['openapi_validator']['definition_provider_collection'])
             );
         } else {
             $container
