@@ -16,6 +16,7 @@ use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotation;
 class ValidatorAnnotationChecker
 {
 
-    public function defaultAction(){}
-
+    public function defaultAction()
+    {
+    }
 }

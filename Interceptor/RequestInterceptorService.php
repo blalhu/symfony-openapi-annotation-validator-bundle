@@ -27,8 +27,7 @@ class RequestInterceptorService implements RequestInterceptorInterface
         OpenAPIProviderCollectionInterface $providerCollection,
         array $validatorAnnotationServices,
         array $errorActionServices
-    )
-    {
+    ) {
         $this->requestValidator = $requestValidator;
         $this->providerCollection = $providerCollection;
         $this->setValidatorAnnotationClasses($validatorAnnotationServices);
