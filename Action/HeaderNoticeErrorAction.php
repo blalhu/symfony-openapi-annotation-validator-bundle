@@ -9,4 +9,9 @@ class HeaderNoticeErrorAction implements ErrorActionInterface
     public function __construct()
     {
     }
+
+    public function triggerAction(): void
+    {
+        // TODO: Implement triggerAction() method.
+    }
 }

@@ -15,11 +15,14 @@ final class DefaultValidatorAnnotation implements ValidatorAnnotationInterface
     use ValidatorAnnotationErrorActionTrait;
 
     /** @var array */
-    private $errorAction;
+    private $errorActions;
 
     public function __construct()
     {
-        $this->errorAction[] = BadRequestResponseErrorAction::class;
+        $this->errorActions = [
+            '@pelso.openapi_validator_bundle.error_action.bad_request_response',
+            '@pelso.openapi_validator_bundle.error_action.log',
+        ];
     }
 
     public function getProviderName(): string

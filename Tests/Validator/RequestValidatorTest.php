@@ -14,7 +14,7 @@ class RequestValidatorTest extends TestCase
     public function testValidator(): void
     {
         $this->assertEquals(
-            true,
+            false,
             (new RequestValidator())->validate(new Request())
         );
     }

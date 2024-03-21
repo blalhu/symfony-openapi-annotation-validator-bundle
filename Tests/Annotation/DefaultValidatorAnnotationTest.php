@@ -25,7 +25,7 @@ class DefaultValidatorAnnotationTest extends TestCase
     public function testAnnotationValuePass(): void
     {
         $this->assertEquals(
-            1,
+            2,
             count($this->loadedAnnotation->getErrorActions())
         );
     }

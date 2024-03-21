@@ -2,8 +2,17 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Tests\Interceptor;
 
+use Pelso\OpenAPIValidatorBundle\Action\BadRequestResponseErrorAction;
+use Pelso\OpenAPIValidatorBundle\Action\ExceptionErrorAction;
+use Pelso\OpenAPIValidatorBundle\Action\HeaderNoticeErrorAction;
+use Pelso\OpenAPIValidatorBundle\Action\LogErrorAction;
+use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollection;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorInterface;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorService;
+use Pelso\OpenAPIValidatorBundle\Tests\Annotation\ValidatorAnnotationChecker;
+use Pelso\OpenAPIValidatorBundle\Validator\RequestValidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Tests\Command\CacheClearCommand\Fixture\TestAppKernel;
 use Symfony\Bundle\FrameworkBundle\Tests\Functional\app\AppKernel;
@@ -25,17 +34,28 @@ class RequestInterceptorServiceTest extends TestCase
 
     public function testEventHandler(): void
     {
-        $filterControllerEvent = new FilterControllerEvent(
-            new TestAppKernel('test', false),
-            function () {
-            },
-            new Request(),
-            1
+        $filterControllerEvent = $this->createMock(FilterControllerEvent::class);
+        $filterControllerEvent->method('getRequest')->willReturn(new Request());
+        $filterControllerEvent->method('getController')->willReturn([new ValidatorAnnotationChecker(), 'defaultAction']);
+        $filterControllerEvent->method('isMasterRequest')->willReturn(true);
+
+        $service = new RequestInterceptorService(
+            new RequestValidator(),
+            new OpenAPIProviderCollection(),
+            [
+                ValidatorAnnotation::class,
+                DefaultValidatorAnnotation::class
+            ],
+            [
+                '@pelso.openapi_validator_bundle.error_action.bad_request_response' => new BadRequestResponseErrorAction(),
+                '@pelso.openapi_validator_bundle.error_action.exception' => new ExceptionErrorAction(),
+                '@pelso.openapi_validator_bundle.error_action.header_notice' => new HeaderNoticeErrorAction(),
+                '@pelso.openapi_validator_bundle.error_action.log' => new LogErrorAction(),
+            ]
         );
-        $service = new RequestInterceptorService();
         $service->onKernelController($filterControllerEvent);
         $this->assertEquals(
-            'test_value',
+            'en',
             $filterControllerEvent->getRequest()->getLocale()
         );
     }

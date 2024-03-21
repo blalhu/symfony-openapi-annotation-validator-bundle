@@ -17,7 +17,7 @@ final class ValidatorAnnotation implements ValidatorAnnotationInterface
     public $providerName;
 
     /** @var array */
-    public $errorAction;
+    public $errorActions;
 
     public function getProviderName(): string
     {

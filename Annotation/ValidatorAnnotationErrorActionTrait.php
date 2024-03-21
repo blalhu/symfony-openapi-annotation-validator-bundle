@@ -7,10 +7,10 @@ use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
 trait ValidatorAnnotationErrorActionTrait
 {
     /**
-     * @return ErrorActionInterface[]
+     * @return string[]
      */
     public function getErrorActions(): array
     {
-        return $this->errorAction; //TODO: give back service instances!!!
+        return $this->errorActions;
     }
 }
