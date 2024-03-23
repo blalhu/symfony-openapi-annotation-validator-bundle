@@ -4,6 +4,7 @@ namespace Pelso\OpenAPIValidatorBundle\Tests\Collection;
 
 use League\OpenAPIValidation\PSR7\ValidatorBuilder;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollection;
+use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingProviderException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ProviderNameAlreadyTakenException;
 use Pelso\OpenAPIValidatorBundle\Provider\OpenAPIProviderInterface;
 use PHPUnit\Framework\TestCase;
@@ -46,6 +47,15 @@ class OpenAPIProviderCollectionTest extends TestCase
             ->add('p2', $this->provider);
 
         $this->assertEquals($this->provider, $collection->get('p1'));
+    }
+
+    public function testNonExistingProvider(): void
+    {
+        $collection = (new OpenAPIProviderCollection())
+            ->add('p1', $this->provider);
+
+        $this->expectException(NonExistingProviderException::class);
+        $collection->get('p2');
     }
 
     public function testAllGetter(): void

@@ -14,5 +14,6 @@ class ExceptionErrorActionTest extends TestCase
                 class_implements(new ExceptionErrorAction())
             )
         );
+        (new ExceptionErrorAction())->triggerAction();
     }
 }

@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
 use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotationInterface;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollectionInterface;
+use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
 use Pelso\OpenAPIValidatorBundle\Validator\RequestValidatorInterface;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 
@@ -61,11 +62,11 @@ class RequestInterceptorService implements RequestInterceptorInterface
         /** @var ValidatorAnnotationInterface|null $annotation */
         $annotation = null;
         foreach ($this->validatorAnnotationClasses as $annotationClass) {
-            $annotation = $reader->getClassAnnotation($reflectionClass, $annotationClass);
+            $annotation = $reader->getMethodAnnotation($reflectionMethod, $annotationClass);
             if ($annotation !== null) {
                 break;
             }
-            $annotation = $reader->getMethodAnnotation($reflectionMethod, $annotationClass);
+            $annotation = $reader->getClassAnnotation($reflectionClass, $annotationClass);
             if ($annotation !== null) {
                 break;
             }
@@ -75,11 +76,17 @@ class RequestInterceptorService implements RequestInterceptorInterface
             return;
         }
 
-        if ($this->requestValidator->validate($filterControllerEvent->getRequest())) {
+        if ($this->requestValidator->validate(
+            $filterControllerEvent->getRequest(),
+            $this->providerCollection->get($annotation->getProviderName())
+        )) {
             return;
         }
 
         foreach ($annotation->getErrorActions() as $errorActionServiceId) {
+            if (!array_key_exists($errorActionServiceId, $this->errorActionServices)) {
+                throw new NonExistingErrorActionException();
+            }
             $this->errorActionServices[$errorActionServiceId]->triggerAction();
         }
     }

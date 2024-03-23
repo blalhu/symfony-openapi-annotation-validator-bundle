@@ -14,5 +14,6 @@ class LogErrorActionTest extends TestCase
                 class_implements(new LogErrorAction())
             )
         );
+        (new LogErrorAction())->triggerAction();
     }
 }

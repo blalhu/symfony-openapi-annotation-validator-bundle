@@ -3,6 +3,7 @@
 namespace Pelso\OpenAPIValidatorBundle\Collection;
 
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollectionInterface;
+use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingProviderException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ProviderNameAlreadyTakenException;
 use Pelso\OpenAPIValidatorBundle\Provider\OpenAPIProviderInterface;
 use phpDocumentor\Reflection\Types\This;
@@ -27,6 +28,10 @@ class OpenAPIProviderCollection implements OpenAPIProviderCollectionInterface
 
     public function get(string $name): OpenAPIProviderInterface
     {
+        if (!array_key_exists($name, $this->providers)) {
+            throw new NonExistingProviderException();
+        }
+
         return $this->providers[$name];
     }
 

@@ -2,15 +2,16 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Validator;
 
-use Pelso\OpenAPIValidatorBundle\Validator\RequestValidatorInterface;
+use Pelso\OpenAPIValidatorBundle\Provider\OpenAPIProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class RequestValidator implements RequestValidatorInterface
 {
 
-    public function validate(Request $request): bool
-    {
-        // TODO: Implement validate() method.
+    public function validate(
+        Request $request,
+        OpenAPIProviderInterface $openAPIProvider
+    ): bool {
         return false;
     }
 }

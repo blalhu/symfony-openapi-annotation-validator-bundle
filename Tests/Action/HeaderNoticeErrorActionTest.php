@@ -14,5 +14,6 @@ class HeaderNoticeErrorActionTest extends TestCase
                 class_implements(new HeaderNoticeErrorAction())
             )
         );
+        (new HeaderNoticeErrorAction())->triggerAction();
     }
 }

@@ -14,5 +14,6 @@ class BadRequestResponseErrorActionTest extends TestCase
                 class_implements(new BadRequestResponseErrorAction())
             )
         );
+        (new BadRequestResponseErrorAction())->triggerAction();
     }
 }
