@@ -14,32 +14,22 @@ use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorService;
 use Pelso\OpenAPIValidatorBundle\Tests\Annotation\ValidatorAnnotationChecker;
 use Pelso\OpenAPIValidatorBundle\Validator\RequestValidator;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bundle\FrameworkBundle\Tests\Command\CacheClearCommand\Fixture\TestAppKernel;
-use Symfony\Bundle\FrameworkBundle\Tests\Functional\app\AppKernel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
-use Symfony\Component\HttpKernel\HttpKernel;
 
 class RequestInterceptorServiceTest extends TestCase
 {
-    public function testInterceptorImplementsInterface()
-    {
-        $this->assertTrue(
-            in_array(
-                RequestInterceptorInterface::class,
-                class_implements(RequestInterceptorService::class)
-            )
-        );
-    }
+    private $interceptorService;
 
-    public function testEventHandler(): void
-    {
-        $filterControllerEvent = $this->createMock(FilterControllerEvent::class);
-        $filterControllerEvent->method('getRequest')->willReturn(new Request());
-        $filterControllerEvent->method('getController')->willReturn([new ValidatorAnnotationChecker(), 'defaultAction']);
-        $filterControllerEvent->method('isMasterRequest')->willReturn(true);
+    private $controllerEvent;
 
-        $service = new RequestInterceptorService(
+    public function setUp()
+    {
+        $this->controllerEvent = $this->createMock(FilterControllerEvent::class);
+        $this->controllerEvent->method('getRequest')->willReturn(new Request());
+        $this->controllerEvent->method('isMasterRequest')->willReturn(true);
+
+        $this->interceptorService = new RequestInterceptorService(
             new RequestValidator(),
             new OpenAPIProviderCollection(),
             [
@@ -53,10 +43,27 @@ class RequestInterceptorServiceTest extends TestCase
                 '@pelso.openapi_validator_bundle.error_action.log' => new LogErrorAction(),
             ]
         );
-        $service->onKernelController($filterControllerEvent);
+    }
+
+    public function testInterceptorImplementsInterface()
+    {
+        $this->assertTrue(
+            in_array(
+                RequestInterceptorInterface::class,
+                class_implements(RequestInterceptorService::class)
+            )
+        );
+    }
+
+    public function testEventHandler(): void
+    {
+        $controllerEvent = clone $this->controllerEvent;
+        $controllerEvent->method('getController')->willReturn([new ValidatorAnnotationChecker(), 'defaultAction']);
+
+        $this->interceptorService->onKernelController($controllerEvent);
         $this->assertEquals(
             'en',
-            $filterControllerEvent->getRequest()->getLocale()
+            $controllerEvent->getRequest()->getLocale()
         );
     }
 }
