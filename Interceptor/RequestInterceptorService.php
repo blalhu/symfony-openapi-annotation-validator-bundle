@@ -44,33 +44,14 @@ class RequestInterceptorService implements RequestInterceptorInterface
 
     public function onKernelController(FilterControllerEvent $filterControllerEvent)
     {
-        if (!$filterControllerEvent->isMasterRequest()) {
+        if (!$filterControllerEvent->isMasterRequest()
+            || !is_array($filterControllerEvent->getController())
+        ) {
             return;
         }
-
-        if (!is_array($filterControllerEvent->getController())) {
-            return;
-        }
-
-        [$controllerObject, $actionName] = $filterControllerEvent->getController();
-        $controllerClassName = get_class($controllerObject);
-
-        $reflectionClass = new \ReflectionClass($controllerClassName);
-        $reflectionMethod = new \ReflectionMethod($controllerClassName.'::'.$actionName);
-        $reader = new AnnotationReader();
 
         /** @var ValidatorAnnotationInterface|null $annotation */
-        $annotation = null;
-        foreach ($this->validatorAnnotationClasses as $annotationClass) {
-            $annotation = $reader->getMethodAnnotation($reflectionMethod, $annotationClass);
-            if ($annotation !== null) {
-                break;
-            }
-            $annotation = $reader->getClassAnnotation($reflectionClass, $annotationClass);
-            if ($annotation !== null) {
-                break;
-            }
-        }
+        $annotation = $this->controllerEventToValidatorAnnotation($filterControllerEvent);
 
         if ($annotation === null) {
             return;
@@ -89,5 +70,30 @@ class RequestInterceptorService implements RequestInterceptorInterface
             }
             $this->errorActionServices[$errorActionServiceId]->triggerAction();
         }
+    }
+
+    private function controllerEventToValidatorAnnotation(
+        FilterControllerEvent $event
+    ): ?ValidatorAnnotationInterface {
+        [$controllerObject, $actionName] = $event->getController();
+        $controllerClassName = get_class($controllerObject);
+
+        $reflectionClass = new \ReflectionClass($controllerClassName);
+        $reflectionMethod = new \ReflectionMethod($controllerClassName.'::'.$actionName);
+        $reader = new AnnotationReader();
+
+        $annotation = null;
+        foreach ($this->validatorAnnotationClasses as $annotationClass) {
+            $annotation = $reader->getMethodAnnotation($reflectionMethod, $annotationClass);
+            if ($annotation !== null) {
+                break;
+            }
+            $annotation = $reader->getClassAnnotation($reflectionClass, $annotationClass);
+            if ($annotation !== null) {
+                break;
+            }
+        }
+
+        return $annotation;
     }
 }
