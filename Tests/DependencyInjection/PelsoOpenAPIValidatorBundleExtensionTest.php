@@ -32,8 +32,30 @@ class PelsoOpenAPIValidatorBundleExtensionTest extends TestCase
             $containerBuilder
         );
 
+        $this->assertArrayHasKey('pelso.openapi_validator_bundle.request_interceptor', $containerBuilder->getAliases());
+        $this->assertArrayHasKey('pelso.openapi_validator_bundle.validator', $containerBuilder->getAliases());
+        $this->assertArrayHasKey('pelso.openapi_validator_bundle.provider_collection', $containerBuilder->getAliases());
+    }
+
+    public function testProviderServicePass(): void
+    {
+        $containerBuilder = new ContainerBuilder();
+        (new PelsoOpenAPIValidatorBundleExtension())->load(
+            [
+                'pelso_open_api_validator_bundle' => [
+                    'openapi_provider_list' => [
+                        [
+                            'name' => 'foo',
+                            'service' => 'foo_service',
+                        ],
+                    ],
+                ],
+            ],
+            $containerBuilder
+        );
+
         $this->assertTrue(
-            $containerBuilder->has('pelso.openapi_validator_bundle.request_interceptor')
+            $containerBuilder->has('pelso.openapi_validator_bundle.provider_collection')
         );
     }
 }

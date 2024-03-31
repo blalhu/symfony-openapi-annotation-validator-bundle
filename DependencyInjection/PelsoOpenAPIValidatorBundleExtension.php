@@ -22,6 +22,10 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
         $configuration = new BundleConfiguration();
         $configs = $this->processConfiguration($configuration, $configs);
 
+        $container->setParameter('pelso_open_api_validator_bundle.openapi_provider_list', $configs['openapi_provider_list']);
+        $container->setParameter('pelso_open_api_validator_bundle.openapi_yaml_list', $configs['openapi_yaml_list']);
+        $container->setParameter('pelso_open_api_validator_bundle.openapi_json_list', $configs['openapi_json_list']);
+
         $container = $this->defineValidators($configs, $container);
 
         $container = $this->defineErrorActions($configs, $container);
@@ -137,7 +141,24 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
         } else {
             $container
                 ->register(BundleConfiguration::PROVIDER_COLLECTION)
-                ->setClass(OpenAPIProviderCollection::class);
+                ->setClass(OpenAPIProviderCollection::class)
+                ->addArgument(
+                    array_map(
+                        function (array $serviceDefinition): array {
+                            $serviceDefinition['service'] = new Reference(
+                                ltrim(
+                                    $serviceDefinition['service'],
+                                    '@'
+                                )
+                            );
+
+                            return $serviceDefinition;
+                        },
+                        $container->getParameter('pelso_open_api_validator_bundle.openapi_provider_list')
+                    )
+                )
+                ->addArgument('%pelso_open_api_validator_bundle.openapi_yaml_list%')
+                ->addArgument('%pelso_open_api_validator_bundle.openapi_json_list%');
         }
 
         return $container;
