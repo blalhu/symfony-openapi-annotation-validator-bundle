@@ -3,6 +3,7 @@
 namespace Pelso\OpenAPIValidatorBundle\Action;
 
 use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
+use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
 
 class HeaderNoticeErrorAction implements ErrorActionInterface
 {
@@ -10,7 +11,7 @@ class HeaderNoticeErrorAction implements ErrorActionInterface
     {
     }
 
-    public function triggerAction(): void
+    public function triggerAction(ValidationErrorException $exception): void
     {
         // TODO: Implement triggerAction() method.
     }

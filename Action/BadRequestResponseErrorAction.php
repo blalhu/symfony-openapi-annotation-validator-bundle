@@ -3,6 +3,7 @@
 namespace Pelso\OpenAPIValidatorBundle\Action;
 
 use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
+use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
 
 class BadRequestResponseErrorAction implements ErrorActionInterface
 {
@@ -10,7 +11,7 @@ class BadRequestResponseErrorAction implements ErrorActionInterface
     {
     }
 
-    public function triggerAction(): void
+    public function triggerAction(ValidationErrorException $exception): void
     {
         // TODO: Implement triggerAction() method.
     }

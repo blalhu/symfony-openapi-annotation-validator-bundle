@@ -10,5 +10,5 @@ interface RequestValidatorInterface
     public function validate(
         Request $request,
         OpenAPIProviderInterface $openAPIProvider
-    ): bool;
+    ): void;
 }

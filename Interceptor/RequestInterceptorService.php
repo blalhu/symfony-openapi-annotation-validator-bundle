@@ -7,6 +7,7 @@ use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
 use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotationInterface;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollectionInterface;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
+use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
 use Pelso\OpenAPIValidatorBundle\Validator\RequestValidatorInterface;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 
@@ -57,18 +58,22 @@ class RequestInterceptorService implements RequestInterceptorInterface
             return;
         }
 
-        if ($this->requestValidator->validate(
-            $filterControllerEvent->getRequest(),
-            $this->providerCollection->get($annotation->getProviderName())
-        )) {
-            return;
-        }
+        try {
+            $this->requestValidator->validate(
+                $filterControllerEvent->getRequest(),
+                $this->providerCollection->get($annotation->getProviderName())
+            );
 
-        foreach ($annotation->getErrorActions() as $errorActionServiceId) {
-            if (!array_key_exists($errorActionServiceId, $this->errorActionServices)) {
-                throw new NonExistingErrorActionException();
+            return;
+        } catch (ValidationErrorException $exception) {
+            foreach ($annotation->getErrorActions() as $errorActionServiceId) {
+                if (!array_key_exists($errorActionServiceId, $this->errorActionServices)) {
+                    throw new NonExistingErrorActionException();
+                }
+                $this->errorActionServices[$errorActionServiceId]->triggerAction(
+                    $exception
+                );
             }
-            $this->errorActionServices[$errorActionServiceId]->triggerAction();
         }
     }
 

@@ -10,6 +10,7 @@ use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidatorAnnotation;
 use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotation;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollection;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
+use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorInterface;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorService;
 use Pelso\OpenAPIValidatorBundle\Provider\AbstractOpenAPIProvider;
@@ -30,6 +31,11 @@ class RequestInterceptorServiceTest extends TestCase
 
     private $providerMock;
 
+    private $badRequestErrorAction;
+    private $exceptionErrorAction;
+    private $headerNoticeErrorAction;
+    private $logErrorAction;
+
     public function setUp()
     {
         $this->controllerEvent = $this->createMock(FilterControllerEvent::class);
@@ -40,6 +46,11 @@ class RequestInterceptorServiceTest extends TestCase
 
         $this->validator = $this->createMock(RequestValidator::class);
 
+        $this->badRequestErrorAction = $this->createMock(BadRequestResponseErrorAction::class);
+        $this->exceptionErrorAction = $this->createMock(ExceptionErrorAction::class);
+        $this->headerNoticeErrorAction = $this->createMock(HeaderNoticeErrorAction::class);
+        $this->logErrorAction = $this->createMock(LogErrorAction::class);
+
         $this->interceptorService = new RequestInterceptorService(
             $this->validator,
             $this->providerCollection,
@@ -48,10 +59,10 @@ class RequestInterceptorServiceTest extends TestCase
                 DefaultValidatorAnnotation::class
             ],
             [
-                '@pelso.openapi_validator_bundle.error_action.bad_request_response' => new BadRequestResponseErrorAction(),
-                '@pelso.openapi_validator_bundle.error_action.exception' => new ExceptionErrorAction(),
-                '@pelso.openapi_validator_bundle.error_action.header_notice' => new HeaderNoticeErrorAction(),
-                '@pelso.openapi_validator_bundle.error_action.log' => new LogErrorAction(),
+                '@pelso.openapi_validator_bundle.error_action.bad_request_response' => $this->badRequestErrorAction,
+                '@pelso.openapi_validator_bundle.error_action.exception' => $this->exceptionErrorAction,
+                '@pelso.openapi_validator_bundle.error_action.header_notice' => $this->headerNoticeErrorAction,
+                '@pelso.openapi_validator_bundle.error_action.log' => $this->logErrorAction,
             ]
         );
 
@@ -175,9 +186,7 @@ class RequestInterceptorServiceTest extends TestCase
             new NonExistingErrorActionAnnotationController(),
             'defaultAction'
         ]);
-        $this->validator->method('validate')->willReturnCallback(function (string $name) {
-            return false;
-        });
+        $this->validator->method('validate')->willThrowException(new ValidationErrorException(new \Exception()));
 
         $this->expectException(NonExistingErrorActionException::class);
         $this->interceptorService->onKernelController($controllerEvent);
@@ -241,6 +250,41 @@ class RequestInterceptorServiceTest extends TestCase
         $this->assertEquals(
             false,
             $validatorCalled
+        );
+    }
+
+
+    public function testInvalidRequest(): void
+    {
+        $controllerEvent = clone $this->controllerEvent;
+        $controllerEvent->method('getController')->willReturn([
+            new DefaultAnnotationController(),
+            'defaultAction'
+        ]);
+        $this->validator->method('validate')->willThrowException(new ValidationErrorException(new \Exception()));
+        /*$this->providerCollection->method('get')->willReturnCallback(function (string $name) use (&$providerCollectionCalled) {
+            $this->providerCollection = true;
+            return $this->providerMock;
+        });*/
+
+        $triggerCounter = 0;
+        $this->badRequestErrorAction->method('triggerAction')->willReturnCallback(function () use (&$triggerCounter) {
+            $triggerCounter++;
+        });
+        $this->exceptionErrorAction->method('triggerAction')->willReturnCallback(function () use (&$triggerCounter) {
+            $triggerCounter++;
+        });
+        $this->headerNoticeErrorAction->method('triggerAction')->willReturnCallback(function () use (&$triggerCounter) {
+            $triggerCounter++;
+        });
+        $this->logErrorAction->method('triggerAction')->willReturnCallback(function () use (&$triggerCounter) {
+            $triggerCounter++;
+        });
+
+        $this->interceptorService->onKernelController($controllerEvent);
+        $this->assertEquals(
+            2,
+            $triggerCounter
         );
     }
 }

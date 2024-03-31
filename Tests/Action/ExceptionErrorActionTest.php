@@ -2,6 +2,7 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Action;
 
+use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
 use PHPUnit\Framework\TestCase;
 
 class ExceptionErrorActionTest extends TestCase
@@ -14,6 +15,6 @@ class ExceptionErrorActionTest extends TestCase
                 class_implements(new ExceptionErrorAction())
             )
         );
-        (new ExceptionErrorAction())->triggerAction();
+        (new ExceptionErrorAction())->triggerAction(new ValidationErrorException(new \Exception()));
     }
 }
