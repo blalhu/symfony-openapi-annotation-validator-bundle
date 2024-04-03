@@ -71,7 +71,8 @@ class RequestInterceptorService implements RequestInterceptorInterface
                     throw new NonExistingErrorActionException();
                 }
                 $this->errorActionServices[$errorActionServiceId]->triggerAction(
-                    $exception
+                    $exception,
+                    $filterControllerEvent
                 );
             }
         }

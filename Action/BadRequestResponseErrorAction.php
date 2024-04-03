@@ -2,8 +2,8 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Action;
 
-use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
+use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 
 class BadRequestResponseErrorAction implements ErrorActionInterface
 {
@@ -11,8 +11,10 @@ class BadRequestResponseErrorAction implements ErrorActionInterface
     {
     }
 
-    public function triggerAction(ValidationErrorException $exception): void
-    {
+    public function triggerAction(
+        ValidationErrorException $exception,
+        FilterControllerEvent $controllerEvent
+    ): void {
         // TODO: Implement triggerAction() method.
     }
 }
