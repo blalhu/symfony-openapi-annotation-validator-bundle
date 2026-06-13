@@ -16,9 +16,41 @@ class BadRequestResponseErrorActionTest extends TestCase
                 class_implements(new BadRequestResponseErrorAction())
             )
         );
-        (new BadRequestResponseErrorAction())->triggerAction(
+    }
+
+    public function testActionCall(): void
+    {
+
+
+        $errorController = new Class {
+            private $called = false;
+
+            public function badRequestAction(): void
+            {
+                $this->called = true;
+            }
+
+            public function methodCalled(): bool
+            {
+                return $this->called;
+            }
+        };
+
+        $controller = function () {
+        };
+
+        $filterControllerEvent = $this->createMock(FilterControllerEvent::class);
+        $filterControllerEvent->method('setController')->willReturnCallback(function ($callable) use (&$controller) {
+            $controller = $callable;
+        });
+
+        (new BadRequestResponseErrorAction([$errorController, 'badRequestAction']))->triggerAction(
             new ValidationErrorException(new \Exception()),
-            $this->createMock(FilterControllerEvent::class)
+            $filterControllerEvent
         );
+
+        $controller();
+
+        $this->assertTrue($errorController->methodCalled());
     }
 }

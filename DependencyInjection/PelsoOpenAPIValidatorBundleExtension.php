@@ -55,6 +55,7 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
         $container
             ->register('pelso.openapi_validator_bundle.error_action.log')
             ->setClass(LogErrorAction::class)
+            ->addArgument(new Reference('logger'))
             ->addTag('pelso.error_action');
 
         return $container;

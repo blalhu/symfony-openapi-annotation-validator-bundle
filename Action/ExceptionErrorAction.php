@@ -15,6 +15,6 @@ class ExceptionErrorAction implements ErrorActionInterface
         ValidationErrorException $exception,
         FilterControllerEvent $controllerEvent
     ): void {
-        // TODO: Implement triggerAction() method.
+        throw $exception;
     }
 }
