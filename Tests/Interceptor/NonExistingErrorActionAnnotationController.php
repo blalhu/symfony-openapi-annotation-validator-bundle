@@ -2,12 +2,12 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Tests\Interceptor;
 
-use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @ValidatorAnnotation(
+ * @Validator(
  *     providerName="default",
  *     errorActions={
  *         "@non-existing"

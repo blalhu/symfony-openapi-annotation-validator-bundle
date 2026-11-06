@@ -34,32 +34,124 @@ class BundleConfiguration implements ConfigurationInterface
                     ->defaultValue([])
                     ->prototype('array')
                         ->children()
-                            ->scalarNode('name')->end()
-                            ->scalarNode('service')->end()
+                            ->scalarNode('name')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->scalarNode('service')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
                         ->end()
+                    ->end()
+                    ->validate()
+                        ->ifTrue(function($value): bool {
+                            return $this->arrayFieldUniquenessChecker(
+                                'name',
+                                $value
+                            );
+                        })
+                        ->thenInvalid('Each openapi_provider_list.[].name must be unique.')
                     ->end()
                 ->end()
                 ->arrayNode('openapi_yaml_list')
                     ->defaultValue([])
                     ->prototype('array')
                         ->children()
-                            ->scalarNode('name')->end()
-                            ->scalarNode('uri')->end()
+                            ->scalarNode('name')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->scalarNode('uri')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
                         ->end()
+                    ->end()
+                    ->validate()
+                        ->ifTrue(function($value): bool {
+                            return $this->arrayFieldUniquenessChecker(
+                                'name',
+                                $value
+                            );
+                        })
+                        ->thenInvalid('Each openapi_yaml_list.[].name must be unique.')
                     ->end()
                 ->end()
                 ->arrayNode('openapi_json_list')
                     ->defaultValue([])
                     ->prototype('array')
                         ->children()
-                            ->scalarNode('name')->end()
-                            ->scalarNode('uri')->end()
+                            ->scalarNode('name')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->scalarNode('uri')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
                         ->end()
+                    ->end()
+                    ->validate()
+                        ->ifTrue(function($value): bool {
+                            return $this->arrayFieldUniquenessChecker(
+                                'name',
+                                $value
+                            );
+                        })
+                        ->thenInvalid('Each openapi_json_list.[].name must be unique.')
+                    ->end()
+                ->end()
+                ->arrayNode('profiles')
+                    ->defaultValue([])
+                    ->prototype('array')
+                        ->children()
+                            ->scalarNode('profile_name')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->scalarNode('provider_name')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->arrayNode('error_actions')
+                                ->isRequired()
+                                ->requiresAtLeastOneElement()
+                                ->prototype('scalar')
+                                    ->cannotBeEmpty()
+                                    ->validate()
+                                        ->ifTrue(function ($value) {
+                                            return !is_string($value);
+                                        })
+                                        ->thenInvalid('Each error_action must be a string.')
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->validate()
+                        ->ifTrue(function($value): bool {
+                            return $this->arrayFieldUniquenessChecker(
+                                'profile_name',
+                                $value
+                            );
+                        })
+                        ->thenInvalid('Each profile_name must be unique.')
                     ->end()
                 ->end()
             ->end()
         ;
 
         return $treeBuilder;
+    }
+
+    private function arrayFieldUniquenessChecker(
+        string $fieldName,
+        array $array
+    ): bool
+    {
+        $names = array_column($array, $fieldName);
+
+        return count($names) !== count(array_unique($names));
     }
 }

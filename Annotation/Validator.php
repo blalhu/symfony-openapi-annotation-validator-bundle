@@ -9,7 +9,7 @@ use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
  * @Annotation
  * @Target({"CLASS", "METHOD"})
  */
-final class ValidatorAnnotation implements ValidatorAnnotationInterface
+final class Validator implements ValidatorAnnotationInterface
 {
     use ValidatorAnnotationErrorActionTrait;
 

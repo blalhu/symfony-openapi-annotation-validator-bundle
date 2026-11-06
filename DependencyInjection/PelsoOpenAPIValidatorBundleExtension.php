@@ -6,8 +6,9 @@ use Pelso\OpenAPIValidatorBundle\Action\BadRequestResponseErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\ExceptionErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\HeaderNoticeErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\LogErrorAction;
-use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidatorAnnotation;
-use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidator;
+use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
+use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollection;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorService;
 use Pelso\OpenAPIValidatorBundle\Validator\RequestValidator;
@@ -65,12 +66,17 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
     {
         $container
             ->register('pelso.openapi_validator_bundle.annotation.validator')
-            ->setClass(ValidatorAnnotation::class)
+            ->setClass(Validator::class)
             ->addTag('pelso.validator_annotation');
 
         $container
             ->register('pelso.openapi_validator_bundle.annotation.default_validator')
-            ->setClass(DefaultValidatorAnnotation::class)
+            ->setClass(DefaultValidator::class)
+            ->addTag('pelso.validator_annotation');
+
+        $container
+            ->register('pelso.openapi_validator_bundle.annotation.validator_profile')
+            ->setClass(ValidatorProfile::class)
             ->addTag('pelso.validator_annotation');
 
         return $container;
@@ -90,6 +96,7 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
                 ->setClass(RequestInterceptorService::class)
                 ->addArgument(new Reference(BundleConfiguration::VALIDATOR))
                 ->addArgument(new Reference(BundleConfiguration::PROVIDER_COLLECTION))
+                ->addArgument($configs)
                 ->addArgument(array_map(
                     function (string $serviceId) use ($container) {
                         return new Reference($serviceId);

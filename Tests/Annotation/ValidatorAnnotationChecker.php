@@ -2,10 +2,10 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Tests\Annotation;
 
-use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
 
 /**
- * @ValidatorAnnotation(
+ * @Validator(
  *     providerName="provider_name",
  *     errorActions={
  *          "@pelso.openapi_validator_bundle.error_action.header_notice",

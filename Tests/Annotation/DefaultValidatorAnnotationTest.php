@@ -3,7 +3,7 @@
 namespace Pelso\OpenAPIValidatorBundle\Tests\Annotation;
 
 use Doctrine\Common\Annotations\AnnotationReader;
-use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidator;
 use PHPUnit\Framework\TestCase;
 
 class DefaultValidatorAnnotationTest extends TestCase
@@ -19,7 +19,7 @@ class DefaultValidatorAnnotationTest extends TestCase
         $reflectionClass = new \ReflectionClass($checker);
         $reader = new AnnotationReader();
         /** @var ValidatorAnnotationInterface $annotation */
-        $this->loadedAnnotation = $reader->getClassAnnotation($reflectionClass, DefaultValidatorAnnotation::class);
+        $this->loadedAnnotation = $reader->getClassAnnotation($reflectionClass, DefaultValidator::class);
     }
 
     public function testAnnotationValuePass(): void

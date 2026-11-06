@@ -2,12 +2,12 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Tests\Interceptor;
 
-use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @DefaultValidatorAnnotation()
+ * @DefaultValidator()
  */
 class DefaultAnnotationController extends Controller
 {

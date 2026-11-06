@@ -4,9 +4,12 @@ namespace Pelso\OpenAPIValidatorBundle\Interceptor;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
+use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
 use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotationInterface;
+use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollectionInterface;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
+use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingValidatorProfileException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
 use Pelso\OpenAPIValidatorBundle\Validator\RequestValidatorInterface;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
@@ -19,6 +22,8 @@ class RequestInterceptorService implements RequestInterceptorInterface
     /** @var OpenAPIProviderCollectionInterface */
     private $providerCollection;
 
+    private $configs = [];
+
     private $validatorAnnotationClasses = [];
 
     /** @var ErrorActionInterface[] */
@@ -27,11 +32,13 @@ class RequestInterceptorService implements RequestInterceptorInterface
     public function __construct(
         RequestValidatorInterface $requestValidator,
         OpenAPIProviderCollectionInterface $providerCollection,
+        array $configs,
         array $validatorAnnotationServices,
         array $errorActionServices
     ) {
         $this->requestValidator = $requestValidator;
         $this->providerCollection = $providerCollection;
+        $this->configs = $configs;
         $this->setValidatorAnnotationClasses($validatorAnnotationServices);
         $this->errorActionServices = $errorActionServices;
     }
@@ -78,6 +85,10 @@ class RequestInterceptorService implements RequestInterceptorInterface
         }
     }
 
+    /**
+     * @throws \ReflectionException
+     * @throws NonExistingValidatorProfileException
+     */
     private function controllerEventToValidatorAnnotation(
         FilterControllerEvent $event
     ): ?ValidatorAnnotationInterface {
@@ -99,6 +110,34 @@ class RequestInterceptorService implements RequestInterceptorInterface
                 break;
             }
         }
+
+        if ($annotation instanceof ValidatorProfile) {
+            $annotation = $this->validatorProfileConverter($annotation);
+        }
+
+        return $annotation;
+    }
+
+    /**
+     * @throws NonExistingValidatorProfileException
+     */
+    private function validatorProfileConverter(
+        ValidatorProfile $validatorProfile
+    ): ValidatorAnnotationInterface
+    {
+        $profileConfig = [];
+        foreach ($this->configs['profiles'] as $profile) {
+            if ($profile['profile_name'] === $validatorProfile->profileName) {
+                $profileConfig = $profile;
+            }
+        }
+        if (empty($profileConfig)) {
+            throw new NonExistingValidatorProfileException();
+        }
+
+        $annotation = new Validator();
+        $annotation->providerName = $profileConfig['provider_name'];
+        $annotation->errorActions = $profileConfig['error_actions'];
 
         return $annotation;
     }

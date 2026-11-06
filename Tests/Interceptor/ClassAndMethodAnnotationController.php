@@ -2,12 +2,12 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Tests\Interceptor;
 
-use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @ValidatorAnnotation(
+ * @Validator(
  *     providerName="class",
  *     errorActions={
  *         "@pelso.openapi_validator_bundle.error_action.log"
@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ClassAndMethodAnnotationController extends Controller
 {
     /**
-     * @ValidatorAnnotation(
+     * @Validator(
      *     providerName="method",
      *     errorActions={
      *         "@pelso.openapi_validator_bundle.error_action.log"

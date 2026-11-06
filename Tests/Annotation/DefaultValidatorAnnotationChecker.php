@@ -2,10 +2,10 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Tests\Annotation;
 
-use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidator;
 
 /**
- * @DefaultValidatorAnnotation()
+ * @DefaultValidator()
  */
 class DefaultValidatorAnnotationChecker
 {

@@ -6,8 +6,9 @@ use Pelso\OpenAPIValidatorBundle\Action\BadRequestResponseErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\ExceptionErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\HeaderNoticeErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\LogErrorAction;
-use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidatorAnnotation;
-use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotation;
+use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidator;
+use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
+use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollection;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
@@ -54,9 +55,11 @@ class RequestInterceptorServiceTest extends TestCase
         $this->interceptorService = new RequestInterceptorService(
             $this->validator,
             $this->providerCollection,
+            ['profiles' => []],
             [
-                ValidatorAnnotation::class,
-                DefaultValidatorAnnotation::class
+                Validator::class,
+                DefaultValidator::class,
+                ValidatorProfile::class
             ],
             [
                 '@pelso.openapi_validator_bundle.error_action.bad_request_response' => $this->badRequestErrorAction,
