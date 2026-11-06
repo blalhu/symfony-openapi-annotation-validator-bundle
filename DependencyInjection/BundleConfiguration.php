@@ -45,7 +45,7 @@ class BundleConfiguration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->validate()
-                        ->ifTrue(function($value): bool {
+                        ->ifTrue(function ($value): bool {
                             return $this->arrayFieldUniquenessChecker(
                                 'name',
                                 $value
@@ -69,7 +69,7 @@ class BundleConfiguration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->validate()
-                        ->ifTrue(function($value): bool {
+                        ->ifTrue(function ($value): bool {
                             return $this->arrayFieldUniquenessChecker(
                                 'name',
                                 $value
@@ -93,7 +93,7 @@ class BundleConfiguration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->validate()
-                        ->ifTrue(function($value): bool {
+                        ->ifTrue(function ($value): bool {
                             return $this->arrayFieldUniquenessChecker(
                                 'name',
                                 $value
@@ -130,7 +130,7 @@ class BundleConfiguration implements ConfigurationInterface
                         ->end()
                     ->end()
                     ->validate()
-                        ->ifTrue(function($value): bool {
+                        ->ifTrue(function ($value): bool {
                             return $this->arrayFieldUniquenessChecker(
                                 'profile_name',
                                 $value
@@ -148,8 +148,7 @@ class BundleConfiguration implements ConfigurationInterface
     private function arrayFieldUniquenessChecker(
         string $fieldName,
         array $array
-    ): bool
-    {
+    ): bool {
         $names = array_column($array, $fieldName);
 
         return count($names) !== count(array_unique($names));

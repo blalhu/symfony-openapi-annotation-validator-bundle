@@ -123,8 +123,7 @@ class RequestInterceptorService implements RequestInterceptorInterface
      */
     private function validatorProfileConverter(
         ValidatorProfile $validatorProfile
-    ): ValidatorAnnotationInterface
-    {
+    ): ValidatorAnnotationInterface {
         $profileConfig = [];
         foreach ($this->configs['profiles'] as $profile) {
             if ($profile['profile_name'] === $validatorProfile->profileName) {
