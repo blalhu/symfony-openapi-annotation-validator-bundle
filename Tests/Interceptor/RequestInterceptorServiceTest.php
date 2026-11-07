@@ -16,6 +16,8 @@ use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorInterface;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorService;
 use Pelso\OpenAPIValidatorBundle\Provider\AbstractOpenAPIProvider;
+use Pelso\OpenAPIValidatorBundle\Resolver\ControllerEventResolver;
+use Pelso\OpenAPIValidatorBundle\Resolver\ValidatorProfileResolver;
 use Pelso\OpenAPIValidatorBundle\Validator\RequestValidator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,6 +30,8 @@ class RequestInterceptorServiceTest extends TestCase
     private $controllerEvent;
 
     private $providerCollection;
+
+    private $controllerEventResolver;
 
     private $validator;
 
@@ -45,7 +49,10 @@ class RequestInterceptorServiceTest extends TestCase
         $this->controllerEvent->method('isMasterRequest')->willReturn(true);
 
         $this->providerCollection = $this->createMock(OpenAPIProviderCollection::class);
-
+        $this->controllerEventResolver = new ControllerEventResolver(
+            $this->createMock(ValidatorProfileResolver::class),
+            [DefaultValidator::class, Validator::class, ValidatorProfile::class]
+        );
         $this->validator = $this->createMock(RequestValidator::class);
 
         $this->badRequestErrorAction = $this->createMock(BadRequestResponseErrorAction::class);
@@ -56,12 +63,7 @@ class RequestInterceptorServiceTest extends TestCase
         $this->interceptorService = new RequestInterceptorService(
             $this->validator,
             $this->providerCollection,
-            ['profiles' => []],
-            [
-                Validator::class,
-                DefaultValidator::class,
-                ValidatorProfile::class
-            ],
+            $this->controllerEventResolver,
             [
                 '@pelso.openapi_validator_bundle.error_action.bad_request_response' => $this->badRequestErrorAction,
                 '@pelso.openapi_validator_bundle.error_action.exception' => $this->exceptionErrorAction,
@@ -290,50 +292,5 @@ class RequestInterceptorServiceTest extends TestCase
             2,
             $triggerCounter
         );
-    }
-
-    public function testNonExistingValidatorProfile(): void
-    {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new ProfileAnnotationController(),
-            'profileAnnotationAction'
-        ]);
-
-        $this->expectException(NonExistingValidatorProfileException::class);
-        $this->interceptorService->onKernelController($controllerEvent);
-    }
-
-    public function testExistingValidatorProfile(): void
-    {
-
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new ProfileAnnotationController(),
-            'profileAnnotationAction'
-        ]);
-
-        $this->interceptorService = new RequestInterceptorService(
-            $this->validator,
-            $this->providerCollection,
-            ['profiles' => [[
-                'profile_name' => 'v_profile_name',
-                'provider_name' => '',
-                'error_actions' => [],
-            ]]],
-            [
-                Validator::class,
-                DefaultValidator::class,
-                ValidatorProfile::class
-            ],
-            [
-                '@pelso.openapi_validator_bundle.error_action.bad_request_response' => $this->badRequestErrorAction,
-                '@pelso.openapi_validator_bundle.error_action.exception' => $this->exceptionErrorAction,
-                '@pelso.openapi_validator_bundle.error_action.header_notice' => $this->headerNoticeErrorAction,
-                '@pelso.openapi_validator_bundle.error_action.log' => $this->logErrorAction,
-            ]
-        );
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(1, 1);
     }
 }

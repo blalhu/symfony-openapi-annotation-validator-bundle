@@ -2,15 +2,14 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Interceptor;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
-use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
 use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotationInterface;
-use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollectionInterface;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingValidatorProfileException;
+use Pelso\OpenAPIValidatorBundle\Exceptions\UndeterminableValidatorException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
+use Pelso\OpenAPIValidatorBundle\Resolver\ControllerEventResolver;
 use Pelso\OpenAPIValidatorBundle\Validator\RequestValidatorInterface;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 
@@ -22,9 +21,8 @@ class RequestInterceptorService implements RequestInterceptorInterface
     /** @var OpenAPIProviderCollectionInterface */
     private $providerCollection;
 
-    private $configs = [];
-
-    private $validatorAnnotationClasses = [];
+    /** @var ControllerEventResolver */
+    private $controllerEventResolver;
 
     /** @var ErrorActionInterface[] */
     private $errorActionServices = [];
@@ -32,24 +30,20 @@ class RequestInterceptorService implements RequestInterceptorInterface
     public function __construct(
         RequestValidatorInterface $requestValidator,
         OpenAPIProviderCollectionInterface $providerCollection,
-        array $configs,
-        array $validatorAnnotationServices,
+        ControllerEventResolver $controllerEventResolver,
         array $errorActionServices
     ) {
         $this->requestValidator = $requestValidator;
         $this->providerCollection = $providerCollection;
-        $this->configs = $configs;
-        $this->setValidatorAnnotationClasses($validatorAnnotationServices);
+        $this->controllerEventResolver = $controllerEventResolver;
         $this->errorActionServices = $errorActionServices;
     }
 
-    private function setValidatorAnnotationClasses(array $validatorAnnotationServices): void
-    {
-        foreach ($validatorAnnotationServices as $service) {
-            $this->validatorAnnotationClasses[] = $service;
-        }
-    }
-
+    /**
+     * @throws \ReflectionException
+     * @throws NonExistingErrorActionException
+     * @throws NonExistingValidatorProfileException
+     */
     public function onKernelController(FilterControllerEvent $filterControllerEvent)
     {
         if (!$filterControllerEvent->isMasterRequest()
@@ -58,10 +52,11 @@ class RequestInterceptorService implements RequestInterceptorInterface
             return;
         }
 
-        /** @var ValidatorAnnotationInterface|null $annotation */
-        $annotation = $this->controllerEventToValidatorAnnotation($filterControllerEvent);
-
-        if ($annotation === null) {
+        try {
+            /** @var ValidatorAnnotationInterface|null $annotation */
+            $annotation = $this->controllerEventResolver
+                ->resolveAsValidator($filterControllerEvent);
+        } catch (UndeterminableValidatorException $exception) {
             return;
         }
 
@@ -83,61 +78,5 @@ class RequestInterceptorService implements RequestInterceptorInterface
                 );
             }
         }
-    }
-
-    /**
-     * @throws \ReflectionException
-     * @throws NonExistingValidatorProfileException
-     */
-    private function controllerEventToValidatorAnnotation(
-        FilterControllerEvent $event
-    ): ?ValidatorAnnotationInterface {
-        [$controllerObject, $actionName] = $event->getController();
-        $controllerClassName = get_class($controllerObject);
-
-        $reflectionClass = new \ReflectionClass($controllerClassName);
-        $reflectionMethod = new \ReflectionMethod($controllerClassName.'::'.$actionName);
-        $reader = new AnnotationReader();
-
-        $annotation = null;
-        foreach ($this->validatorAnnotationClasses as $annotationClass) {
-            $annotation = $reader->getMethodAnnotation($reflectionMethod, $annotationClass);
-            if ($annotation !== null) {
-                break;
-            }
-            $annotation = $reader->getClassAnnotation($reflectionClass, $annotationClass);
-            if ($annotation !== null) {
-                break;
-            }
-        }
-
-        if ($annotation instanceof ValidatorProfile) {
-            $annotation = $this->validatorProfileConverter($annotation);
-        }
-
-        return $annotation;
-    }
-
-    /**
-     * @throws NonExistingValidatorProfileException
-     */
-    private function validatorProfileConverter(
-        ValidatorProfile $validatorProfile
-    ): ValidatorAnnotationInterface {
-        $profileConfig = [];
-        foreach ($this->configs['profiles'] as $profile) {
-            if ($profile['profile_name'] === $validatorProfile->profileName) {
-                $profileConfig = $profile;
-            }
-        }
-        if (empty($profileConfig)) {
-            throw new NonExistingValidatorProfileException();
-        }
-
-        $annotation = new Validator();
-        $annotation->providerName = $profileConfig['provider_name'];
-        $annotation->errorActions = $profileConfig['error_actions'];
-
-        return $annotation;
     }
 }
