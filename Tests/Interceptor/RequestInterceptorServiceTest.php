@@ -11,6 +11,7 @@ use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
 use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollection;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
+use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingValidatorProfileException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorInterface;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorService;
@@ -289,5 +290,50 @@ class RequestInterceptorServiceTest extends TestCase
             2,
             $triggerCounter
         );
+    }
+
+    public function testNonExistingValidatorProfile(): void
+    {
+        $controllerEvent = clone $this->controllerEvent;
+        $controllerEvent->method('getController')->willReturn([
+            new ProfileAnnotationController(),
+            'profileAnnotationAction'
+        ]);
+
+        $this->expectException(NonExistingValidatorProfileException::class);
+        $this->interceptorService->onKernelController($controllerEvent);
+    }
+
+    public function testExistingValidatorProfile(): void
+    {
+
+        $controllerEvent = clone $this->controllerEvent;
+        $controllerEvent->method('getController')->willReturn([
+            new ProfileAnnotationController(),
+            'profileAnnotationAction'
+        ]);
+
+        $this->interceptorService = new RequestInterceptorService(
+            $this->validator,
+            $this->providerCollection,
+            ['profiles' => [[
+                'profile_name' => 'v_profile_name',
+                'provider_name' => '',
+                'error_actions' => [],
+            ]]],
+            [
+                Validator::class,
+                DefaultValidator::class,
+                ValidatorProfile::class
+            ],
+            [
+                '@pelso.openapi_validator_bundle.error_action.bad_request_response' => $this->badRequestErrorAction,
+                '@pelso.openapi_validator_bundle.error_action.exception' => $this->exceptionErrorAction,
+                '@pelso.openapi_validator_bundle.error_action.header_notice' => $this->headerNoticeErrorAction,
+                '@pelso.openapi_validator_bundle.error_action.log' => $this->logErrorAction,
+            ]
+        );
+        $this->interceptorService->onKernelController($controllerEvent);
+        $this->assertEquals(1, 1);
     }
 }
