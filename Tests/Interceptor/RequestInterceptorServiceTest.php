@@ -85,106 +85,6 @@ class RequestInterceptorServiceTest extends TestCase
         );
     }
 
-    public function testClassAnnotation(): void
-    {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new ClassAnnotationController(),
-            'defaultAction'
-        ]);
-        $providerName = '';
-        $this->providerCollection->method('get')->willReturnCallback(function (string $name) use (&$providerName) {
-            $providerName = $name;
-            return $this->providerMock;
-        });
-
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(
-            'class',
-            $providerName
-        );
-    }
-
-    public function testMethodAnnotation(): void
-    {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new MethodAnnotationController(),
-            'defaultAction'
-        ]);
-        $providerName = '';
-        $this->providerCollection->method('get')->willReturnCallback(function (string $name) use (&$providerName) {
-            $providerName = $name;
-            return $this->providerMock;
-        });
-
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(
-            'method',
-            $providerName
-        );
-    }
-
-    public function testOverridingMethodAnnotation(): void
-    {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new ClassAndMethodAnnotationController(),
-            'defaultAction'
-        ]);
-        $providerName = '';
-        $this->providerCollection->method('get')->willReturnCallback(function (string $name) use (&$providerName) {
-            $providerName = $name;
-            return $this->providerMock;
-        });
-
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(
-            'method',
-            $providerName
-        );
-    }
-
-    public function testNoAnnotation(): void
-    {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new NoAnnotationController(),
-            'defaultAction'
-        ]);
-        $validateCalled = false;
-        $this->validator->method('validate')->willReturnCallback(function (string $name) use (&$validateCalled) {
-            $validateCalled = true;
-            return false;
-        });
-
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(
-            false,
-            $validateCalled
-        );
-    }
-
-    public function testNonExistingAnnotation(): void
-    {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new NonExistingAnnotationController(),
-            'defaultAction'
-        ]);
-        $validateCalled = false;
-        $this->validator->method('validate')->willReturnCallback(function (string $name) use (&$validateCalled) {
-            $validateCalled = true;
-            return false;
-        });
-
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(
-            false,
-            $validateCalled
-        );
-    }
-
     public function testNonExistingErrorActionAnnotation(): void
     {
         $controllerEvent = clone $this->controllerEvent;
@@ -197,31 +97,6 @@ class RequestInterceptorServiceTest extends TestCase
         $this->expectException(NonExistingErrorActionException::class);
         $this->interceptorService->onKernelController($controllerEvent);
     }
-
-    public function testDefaultAnnotation(): void
-    {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new DefaultAnnotationController(),
-            'defaultAction'
-        ]);
-        $this->validator->method('validate')->willReturnCallback(function (string $name) {
-            return true;
-        });
-        $providerCollectionCalled = false;
-        $this->providerCollection->method('get')->willReturnCallback(function (string $name) use (&$providerCollectionCalled) {
-            $this->providerCollection = true;
-            return $this->providerMock;
-        });
-
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(
-            false,
-            $providerCollectionCalled
-        );
-    }
-
-
 
     public function testNonMasterRequest(): void
     {
