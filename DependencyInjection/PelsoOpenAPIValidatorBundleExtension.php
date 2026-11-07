@@ -25,9 +25,18 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
         $configuration = new BundleConfiguration();
         $configs = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter('pelso_open_api_validator_bundle.openapi_provider_list', $configs['openapi_provider_list']);
-        $container->setParameter('pelso_open_api_validator_bundle.openapi_yaml_list', $configs['openapi_yaml_list']);
-        $container->setParameter('pelso_open_api_validator_bundle.openapi_json_list', $configs['openapi_json_list']);
+        $container->setParameter(
+            'pelso_open_api_validator_bundle.openapi_provider_list',
+            $configs['openapi_provider_list']
+        );
+        $container->setParameter(
+            'pelso_open_api_validator_bundle.openapi_yaml_list',
+            $configs['openapi_yaml_list']
+        );
+        $container->setParameter(
+            'pelso_open_api_validator_bundle.openapi_json_list',
+            $configs['openapi_json_list']
+        );
 
         $container = $this->defineValidators($configs, $container);
 
@@ -124,8 +133,7 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
 
     private function getValidatorAnnotationServices(
         ContainerBuilder $container
-    ): array
-    {
+    ): array {
         return array_map(
             function (string $serviceId) use ($container) {
                 return new Reference($serviceId);
@@ -136,8 +144,7 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
 
     private function getValidatorAnnotationClasses(
         ContainerBuilder $container
-    ): array
-    {
+    ): array {
         $validatorAnnotationClasses = [];
         foreach ($this->getValidatorAnnotationServices($container) as $service) {
             $validatorAnnotationClasses[] = $service;
@@ -198,8 +205,7 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
     private function defineValidatorProfileResolver(
         array $configs,
         ContainerBuilder $container
-    ): ContainerBuilder
-    {
+    ): ContainerBuilder {
         $container
             ->register(ValidatorProfileResolver::class)
             ->setClass(ValidatorProfileResolver::class)
@@ -212,8 +218,7 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
     private function defineControllerEventResolver(
         array $configs,
         ContainerBuilder $container
-    ): ContainerBuilder
-    {
+    ): ContainerBuilder {
         $container
             ->register(ControllerEventResolver::class)
             ->setClass(ControllerEventResolver::class)

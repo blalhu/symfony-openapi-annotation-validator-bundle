@@ -63,8 +63,7 @@ class ControllerEventResolverTest extends TestCase
         string $validatorClass,
         string $providerName,
         array $errorActions
-    ): void
-    {
+    ): void {
         $resolver = new ControllerEventResolver(
             $this->validatorProfileResolver,
             $this->validatorAnnotationClasses
@@ -149,8 +148,7 @@ class ControllerEventResolverTest extends TestCase
     private function getControllerEventMock(
         Controller $controller,
         string $actionName
-    ): FilterControllerEvent
-    {
+    ): FilterControllerEvent {
         $controllerEvent = $this->createMock(FilterControllerEvent::class);
         $controllerEvent->method('getRequest')->willReturn(new Request());
         $controllerEvent->method('isMasterRequest')->willReturn(true);

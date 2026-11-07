@@ -20,8 +20,7 @@ class ControllerEventResolver
     public function __construct(
         ValidatorProfileResolver $validatorProfileResolver,
         array $validatorAnnotationClasses
-    )
-    {
+    ) {
         $this->validatorProfileResolver = $validatorProfileResolver;
         $this->validatorAnnotationClasses = $validatorAnnotationClasses;
     }
