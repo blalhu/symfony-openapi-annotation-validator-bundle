@@ -1,4 +1,5 @@
 <?php
+// TODO: Verify missing or unregistered validator annotations throw UndeterminableValidatorException.
 
 namespace Pelso\OpenAPIValidatorBundle\Tests\Resolver;
 

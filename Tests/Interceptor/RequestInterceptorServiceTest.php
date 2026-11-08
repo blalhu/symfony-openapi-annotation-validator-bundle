@@ -1,21 +1,29 @@
 <?php
+//TODO: clean up this mess -- dry out the code
+// TODO: Verify validation receives the exact request and selected provider.
+// TODO: Verify error actions receive the original exception and controller event.
 
 namespace Pelso\OpenAPIValidatorBundle\Tests\Interceptor;
 
 use Pelso\OpenAPIValidatorBundle\Action\BadRequestResponseErrorAction;
+use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
 use Pelso\OpenAPIValidatorBundle\Action\ExceptionErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\HeaderNoticeErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\LogErrorAction;
 use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidator;
 use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
+use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotationInterface;
 use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollection;
+use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollectionInterface;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingValidatorProfileException;
+use Pelso\OpenAPIValidatorBundle\Exceptions\UndeterminableValidatorException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorInterface;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorService;
 use Pelso\OpenAPIValidatorBundle\Provider\AbstractOpenAPIProvider;
+use Pelso\OpenAPIValidatorBundle\Provider\OpenAPIProviderInterface;
 use Pelso\OpenAPIValidatorBundle\Resolver\ControllerEventResolver;
 use Pelso\OpenAPIValidatorBundle\Resolver\ValidatorProfileResolver;
 use Pelso\OpenAPIValidatorBundle\Validator\RequestValidator;
@@ -49,6 +57,7 @@ class RequestInterceptorServiceTest extends TestCase
         $this->controllerEvent->method('isMasterRequest')->willReturn(true);
 
         $this->providerCollection = $this->createMock(OpenAPIProviderCollection::class);
+        // Real resolver instance remains here; ControllerEventResolver is not mocked.
         $this->controllerEventResolver = new ControllerEventResolver(
             $this->createMock(ValidatorProfileResolver::class),
             [DefaultValidator::class, Validator::class, ValidatorProfile::class]
@@ -63,6 +72,7 @@ class RequestInterceptorServiceTest extends TestCase
         $this->interceptorService = new RequestInterceptorService(
             $this->validator,
             $this->providerCollection,
+            // Usage: inject the resolver instance into the interceptor.
             $this->controllerEventResolver,
             [
                 '@pelso.openapi_validator_bundle.error_action.bad_request_response' => $this->badRequestErrorAction,
@@ -85,87 +95,312 @@ class RequestInterceptorServiceTest extends TestCase
         );
     }
 
-    public function testNonExistingErrorActionAnnotation(): void
+    public function testRequestContextChecking(): void
     {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new NonExistingErrorActionAnnotationController(),
-            'defaultAction'
-        ]);
-        $this->validator->method('validate')->willThrowException(new ValidationErrorException(new \Exception()));
+        $resolveAsValidatorCalled = false;
+        $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
+        $controllerEventResolver->method('resolveAsValidator')->willReturnCallback(function () use (&$resolveAsValidatorCalled) {
+            $resolveAsValidatorCalled = true;
 
+            return new class implements ValidatorAnnotationInterface
+            {
+                public function getProviderName(): string
+                {
+                    return 'providerName';
+                }
+
+
+                public function getErrorActions(): array
+                {
+                    return [];
+                }
+            };
+        });
+
+        $validateCalled = false;
+        $requestValidator = $this->createMock(RequestValidator::class);
+        $requestValidator->method('validate')->willReturnCallback(function () use (&$validateCalled) {
+            $validateCalled = true;
+        });
+
+        $providerCollection = $this->createMock(OpenAPIProviderCollectionInterface::class);
+        $providerCollection->method('get')->willReturn($this->createMock(OpenAPIProviderInterface::class));
+
+        $interceptor = new RequestInterceptorService(
+            $requestValidator,
+            $providerCollection,
+            $controllerEventResolver,
+            ['@service.name']
+        );
+
+        $event = $this->createMock(FilterControllerEvent::class);
+        $event->method('isMasterRequest')->willReturn(false);
+        $event->method('getController')->willReturn([]);
+        $event->method('getRequest')->willReturn($this->createMock(Request::class));
+        $interceptor->onKernelController($event);
+
+        $this->assertFalse($resolveAsValidatorCalled);
+        $this->assertFalse($validateCalled);
+
+        $event = $this->createMock(FilterControllerEvent::class);
+        $event->method('isMasterRequest')->willReturn(true);
+        $event->method('getController')->willReturn(true);
+        $event->method('getRequest')->willReturn($this->createMock(Request::class));
+        $interceptor->onKernelController($event);
+
+        $this->assertFalse($resolveAsValidatorCalled);
+        $this->assertFalse($validateCalled);
+
+        $event = $this->createMock(FilterControllerEvent::class);
+        $event->method('isMasterRequest')->willReturn(false);
+        $event->method('getController')->willReturn(true);
+        $event->method('getRequest')->willReturn($this->createMock(Request::class));
+        $interceptor->onKernelController($event);
+
+        $this->assertFalse($resolveAsValidatorCalled);
+        $this->assertFalse($validateCalled);
+
+        $this->assertFalse($resolveAsValidatorCalled);
+        $this->assertFalse($validateCalled);
+
+        $event = $this->createMock(FilterControllerEvent::class);
+        $event->method('isMasterRequest')->willReturn(true);
+        $event->method('getController')->willReturn([]);
+        $event->method('getRequest')->willReturn($this->createMock(Request::class));
+        $interceptor->onKernelController($event);
+
+        $this->assertTrue($resolveAsValidatorCalled);
+        $this->assertTrue($validateCalled);
+    }
+
+    public function testUndeterminableValidator(): void
+    {
+        $resolveAsValidatorCalled = false;
+        $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
+        $controllerEventResolver->method('resolveAsValidator')->willReturnCallback(function () use (&$resolveAsValidatorCalled) {
+            $resolveAsValidatorCalled = true;
+
+            throw new UndeterminableValidatorException();
+        });
+
+        $validateCalled = false;
+        $requestValidator = $this->createMock(RequestValidator::class);
+        $requestValidator->method('validate')->willReturnCallback(function () use (&$validateCalled) {
+            $validateCalled = true;
+        });
+
+        $providerCollection = $this->createMock(OpenAPIProviderCollectionInterface::class);
+        $providerCollection->method('get')->willReturn($this->createMock(OpenAPIProviderInterface::class));
+
+        $interceptor = new RequestInterceptorService(
+            $requestValidator,
+            $providerCollection,
+            $controllerEventResolver,
+            ['@service.name']
+        );
+
+        $event = $this->createMock(FilterControllerEvent::class);
+        $event->method('isMasterRequest')->willReturn(true);
+        $event->method('getController')->willReturn([]);
+        $event->method('getRequest')->willReturn($this->createMock(Request::class));
+        $interceptor->onKernelController($event);
+
+        $this->assertTrue($resolveAsValidatorCalled);
+        $this->assertFalse($validateCalled);
+    }
+
+    public function testValidityHandling(): void
+    {
+        $resolveAsValidatorCalled = false;
+        $getErrorActionsCalled = false;
+        $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
+        $controllerEventResolver->method('resolveAsValidator')->willReturnCallback(function () use (&$resolveAsValidatorCalled, &$getErrorActionsCalled) {
+            $resolveAsValidatorCalled = true;
+
+            return new class($getErrorActionsCalled) implements ValidatorAnnotationInterface
+            {
+                private $getErrorActionsCalled;
+
+                public function __construct(&$getErrorActionsCalled)
+                {
+                    $this->getErrorActionsCalled =& $getErrorActionsCalled;
+                }
+
+                public function getProviderName(): string
+                {
+                    return 'providerName';
+                }
+
+
+                public function getErrorActions(): array
+                {
+                    $this->getErrorActionsCalled = true;
+
+                    return [];
+                }
+            };
+        });
+
+        $validateCalled = false;
+        $requestValidator = $this->createMock(RequestValidator::class);
+        $requestValidator->method('validate')->willReturnCallback(function () use (&$validateCalled) {
+            $validateCalled = true;
+        });
+
+        $providerCollection = $this->createMock(OpenAPIProviderCollectionInterface::class);
+        $providerCollection->method('get')->willReturn($this->createMock(OpenAPIProviderInterface::class));
+
+        $interceptor = new RequestInterceptorService(
+            $requestValidator,
+            $providerCollection,
+            $controllerEventResolver,
+            ['@service.name']
+        );
+
+        $event = $this->createMock(FilterControllerEvent::class);
+        $event->method('isMasterRequest')->willReturn(true);
+        $event->method('getController')->willReturn([]);
+        $event->method('getRequest')->willReturn($this->createMock(Request::class));
+        $interceptor->onKernelController($event);
+
+        $this->assertTrue($validateCalled);
+        $this->assertFalse($getErrorActionsCalled);
+
+
+        $requestValidator = $this->createMock(RequestValidator::class);
+        $requestValidator->method('validate')->willReturnCallback(function () use (&$validateCalled) {
+            $validateCalled = true;
+
+            throw new ValidationErrorException(new \Exception());
+        });
+        $interceptor = new RequestInterceptorService(
+            $requestValidator,
+            $providerCollection,
+            $controllerEventResolver,
+            ['@service.name']
+        );
+        $event = $this->createMock(FilterControllerEvent::class);
+        $event->method('isMasterRequest')->willReturn(true);
+        $event->method('getController')->willReturn([]);
+        $event->method('getRequest')->willReturn($this->createMock(Request::class));
+        $interceptor->onKernelController($event);
+
+        $this->assertTrue($validateCalled);
+        $this->assertTrue($getErrorActionsCalled);
+    }
+
+
+    public function testActionTriggering(): void
+    {
+        $resolveAsValidatorCalled = false;
+        $getErrorActionsCalled = false;
+        $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
+        $controllerEventResolver->method('resolveAsValidator')->willReturnCallback(function () use (&$resolveAsValidatorCalled, &$getErrorActionsCalled) {
+            $resolveAsValidatorCalled = true;
+
+            return new class($getErrorActionsCalled) implements ValidatorAnnotationInterface
+            {
+                private $getErrorActionsCalled;
+
+                public function __construct(&$getErrorActionsCalled)
+                {
+                    $this->getErrorActionsCalled =& $getErrorActionsCalled;
+                }
+
+                public function getProviderName(): string
+                {
+                    return 'providerName';
+                }
+
+
+                public function getErrorActions(): array
+                {
+                    $this->getErrorActionsCalled = true;
+
+                    return ['@service.name2', '@service.name3'];
+                }
+            };
+        });
+
+        $validateCalled = false;
+        $requestValidator = $this->createMock(RequestValidator::class);
+        $requestValidator->method('validate')->willReturnCallback(function () use (&$validateCalled) {
+            $validateCalled = true;
+
+            throw new ValidationErrorException(new \Exception());
+        });
+
+        $providerCollection = $this->createMock(OpenAPIProviderCollectionInterface::class);
+        $providerCollection->method('get')->willReturn($this->createMock(OpenAPIProviderInterface::class));
+
+        $calledServiceNames = [];
+        $interceptor = new RequestInterceptorService(
+            $requestValidator,
+            $providerCollection,
+            $controllerEventResolver,
+            [
+                '@service.name1' => new TestAction('@service.name1', $calledServiceNames),
+                '@service.name2' => new TestAction('@service.name2', $calledServiceNames),
+                '@service.name3' => new TestAction('@service.name3', $calledServiceNames),
+                '@service.name4' => new TestAction('@service.name4', $calledServiceNames),
+            ]
+        );
+
+        $event = $this->createMock(FilterControllerEvent::class);
+        $event->method('isMasterRequest')->willReturn(true);
+        $event->method('getController')->willReturn([]);
+        $event->method('getRequest')->willReturn($this->createMock(Request::class));
+        $interceptor->onKernelController($event);
+
+        $this->assertEquals(['@service.name2', '@service.name3'], $calledServiceNames);
+
+
+        $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
+        $controllerEventResolver->method('resolveAsValidator')->willReturnCallback(function () use (&$resolveAsValidatorCalled, &$getErrorActionsCalled) {
+            $resolveAsValidatorCalled = true;
+
+            return new class($getErrorActionsCalled) implements ValidatorAnnotationInterface
+            {
+                private $getErrorActionsCalled;
+
+                public function __construct(&$getErrorActionsCalled)
+                {
+                    $this->getErrorActionsCalled =& $getErrorActionsCalled;
+                }
+
+                public function getProviderName(): string
+                {
+                    return 'providerName';
+                }
+
+
+                public function getErrorActions(): array
+                {
+                    $this->getErrorActionsCalled = true;
+
+                    return ['@service.name2', '@service.name_non_existing'];
+                }
+            };
+        });
+
+        $calledServiceNames = [];
+        $interceptor = new RequestInterceptorService(
+            $requestValidator,
+            $providerCollection,
+            $controllerEventResolver,
+            [
+                '@service.name1' => new TestAction('@service.name1', $calledServiceNames),
+                '@service.name2' => new TestAction('@service.name2', $calledServiceNames),
+                '@service.name3' => new TestAction('@service.name3', $calledServiceNames),
+                '@service.name4' => new TestAction('@service.name4', $calledServiceNames),
+            ]
+        );
+
+        $event = $this->createMock(FilterControllerEvent::class);
+        $event->method('isMasterRequest')->willReturn(true);
+        $event->method('getController')->willReturn([]);
+        $event->method('getRequest')->willReturn($this->createMock(Request::class));
         $this->expectException(NonExistingErrorActionException::class);
-        $this->interceptorService->onKernelController($controllerEvent);
-    }
-
-    public function testNonMasterRequest(): void
-    {
-        $controllerEvent = $this->createMock(FilterControllerEvent::class);
-        $controllerEvent->method('getRequest')->willReturn(new Request());
-        $controllerEvent->method('isMasterRequest')->willReturn(false);
-        $getRequestCalled = false;
-        $controllerEvent->method('getController')->willReturnCallback(function () use (&$getRequestCalled) {
-            $getRequestCalled = true;
-        });
-
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(
-            false,
-            $getRequestCalled
-        );
-    }
-
-
-
-    public function testInvalidController(): void
-    {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn(false);
-        $validatorCalled = false;
-        $this->validator->method('validate')->willReturnCallback(function (string $name) use (&$validatorCalled) {
-            $validatorCalled = true;
-            return false;
-        });
-
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(
-            false,
-            $validatorCalled
-        );
-    }
-
-
-    public function testInvalidRequest(): void
-    {
-        $controllerEvent = clone $this->controllerEvent;
-        $controllerEvent->method('getController')->willReturn([
-            new DefaultAnnotationController(),
-            'defaultAction'
-        ]);
-        $this->validator->method('validate')->willThrowException(new ValidationErrorException(new \Exception()));
-        /*$this->providerCollection->method('get')->willReturnCallback(function (string $name) use (&$providerCollectionCalled) {
-            $this->providerCollection = true;
-            return $this->providerMock;
-        });*/
-
-        $triggerCounter = 0;
-        $this->badRequestErrorAction->method('triggerAction')->willReturnCallback(function () use (&$triggerCounter) {
-            $triggerCounter++;
-        });
-        $this->exceptionErrorAction->method('triggerAction')->willReturnCallback(function () use (&$triggerCounter) {
-            $triggerCounter++;
-        });
-        $this->headerNoticeErrorAction->method('triggerAction')->willReturnCallback(function () use (&$triggerCounter) {
-            $triggerCounter++;
-        });
-        $this->logErrorAction->method('triggerAction')->willReturnCallback(function () use (&$triggerCounter) {
-            $triggerCounter++;
-        });
-
-        $this->interceptorService->onKernelController($controllerEvent);
-        $this->assertEquals(
-            2,
-            $triggerCounter
-        );
+        $interceptor->onKernelController($event);
     }
 }
