@@ -38,8 +38,6 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
             $configs['openapi_json_list']
         );
 
-        $container = $this->defineValidators($configs, $container);
-
         $container = $this->defineErrorActions($configs, $container);
 
         $container = $this->defineRequestInterceptor($configs, $container);
@@ -72,26 +70,6 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
             ->setClass(LogErrorAction::class)
             ->addArgument(new Reference('logger'))
             ->addTag('pelso.error_action');
-
-        return $container;
-    }
-
-    private function defineValidators(array $configs, ContainerBuilder $container): ContainerBuilder
-    {
-        $container
-            ->register('pelso.openapi_validator_bundle.annotation.validator')
-            ->setClass(Validator::class)
-            ->addTag('pelso.validator_annotation');
-
-        $container
-            ->register('pelso.openapi_validator_bundle.annotation.default_validator')
-            ->setClass(DefaultValidator::class)
-            ->addTag('pelso.validator_annotation');
-
-        $container
-            ->register('pelso.openapi_validator_bundle.annotation.validator_profile')
-            ->setClass(ValidatorProfile::class)
-            ->addTag('pelso.validator_annotation');
 
         return $container;
     }
@@ -129,28 +107,6 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
         }
 
         return $container;
-    }
-
-    private function getValidatorAnnotationServices(
-        ContainerBuilder $container
-    ): array {
-        return array_map(
-            function (string $serviceId) use ($container) {
-                return new Reference($serviceId);
-            },
-            array_keys($container->findTaggedServiceIds('pelso.validator_annotation'))
-        );
-    }
-
-    private function getValidatorAnnotationClasses(
-        ContainerBuilder $container
-    ): array {
-        $validatorAnnotationClasses = [];
-        foreach ($this->getValidatorAnnotationServices($container) as $service) {
-            $validatorAnnotationClasses[] = $service;
-        }
-
-        return $validatorAnnotationClasses;
     }
 
     private function defineValidator(array $configs, ContainerBuilder $container): ContainerBuilder
@@ -223,7 +179,7 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
             ->register(ControllerEventResolver::class)
             ->setClass(ControllerEventResolver::class)
             ->addArgument(new Reference(ValidatorProfileResolver::class))
-            ->addArgument($this->getValidatorAnnotationClasses($container))
+            ->addArgument($configs['annotations'])
         ;
 
         return $container;

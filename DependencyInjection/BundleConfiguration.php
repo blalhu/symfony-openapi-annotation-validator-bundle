@@ -2,6 +2,10 @@
 
 namespace Pelso\OpenAPIValidatorBundle\DependencyInjection;
 
+use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidator;
+use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
+use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotationInterface;
+use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -29,6 +33,32 @@ class BundleConfiguration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('definition_provider_collection')
                     ->defaultValue('@' . self::PROVIDER_COLLECTION)
+                ->end()
+                ->arrayNode('annotations')
+                    ->prototype('scalar')->end()
+                    ->defaultValue([
+                        Validator::class,
+                        DefaultValidator::class,
+                        ValidatorProfile::class
+                    ])
+                    ->validate()
+                        ->ifFalse(function (array $annotations): bool {
+                            foreach ($annotations as $annotation) {
+                                if (
+                                    !is_string($annotation)
+                                    || (
+                                        $annotation !== ValidatorProfile::class
+                                        && !is_a($annotation, ValidatorAnnotationInterface::class, true)
+                                    )
+                                ){
+                                    return false;
+                                }
+                            }
+
+                            return true;
+                        })
+                        ->thenInvalid('Annotations must implement ValidatorAnnotationInterface or ValidatorProfile!')
+                    ->end()
                 ->end()
                 ->arrayNode('openapi_provider_list')
                     ->defaultValue([])
