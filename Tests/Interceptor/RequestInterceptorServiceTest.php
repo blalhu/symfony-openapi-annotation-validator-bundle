@@ -95,7 +95,15 @@ class RequestInterceptorServiceTest extends TestCase
         );
     }
 
-    public function testRequestContextChecking(): void
+    /**
+     * @dataProvider requestContextCheckingDataProvider
+     */
+    public function testRequestContextChecking(
+        bool $isMasterRequestValue,
+        $getControllerValue,
+        bool $expectedToCallResolveAsValidator,
+        bool $expectedToCallValidate
+    ): void
     {
         $resolveAsValidatorCalled = false;
         $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
@@ -134,43 +142,43 @@ class RequestInterceptorServiceTest extends TestCase
         );
 
         $event = $this->createMock(FilterControllerEvent::class);
-        $event->method('isMasterRequest')->willReturn(false);
-        $event->method('getController')->willReturn([]);
+        $event->method('isMasterRequest')->willReturn($isMasterRequestValue);
+        $event->method('getController')->willReturn($getControllerValue);
         $event->method('getRequest')->willReturn($this->createMock(Request::class));
         $interceptor->onKernelController($event);
 
-        $this->assertFalse($resolveAsValidatorCalled);
-        $this->assertFalse($validateCalled);
+        $this->assertEquals($expectedToCallResolveAsValidator, $resolveAsValidatorCalled);
+        $this->assertEquals($expectedToCallValidate, $validateCalled);
+    }
 
-        $event = $this->createMock(FilterControllerEvent::class);
-        $event->method('isMasterRequest')->willReturn(true);
-        $event->method('getController')->willReturn(true);
-        $event->method('getRequest')->willReturn($this->createMock(Request::class));
-        $interceptor->onKernelController($event);
-
-        $this->assertFalse($resolveAsValidatorCalled);
-        $this->assertFalse($validateCalled);
-
-        $event = $this->createMock(FilterControllerEvent::class);
-        $event->method('isMasterRequest')->willReturn(false);
-        $event->method('getController')->willReturn(true);
-        $event->method('getRequest')->willReturn($this->createMock(Request::class));
-        $interceptor->onKernelController($event);
-
-        $this->assertFalse($resolveAsValidatorCalled);
-        $this->assertFalse($validateCalled);
-
-        $this->assertFalse($resolveAsValidatorCalled);
-        $this->assertFalse($validateCalled);
-
-        $event = $this->createMock(FilterControllerEvent::class);
-        $event->method('isMasterRequest')->willReturn(true);
-        $event->method('getController')->willReturn([]);
-        $event->method('getRequest')->willReturn($this->createMock(Request::class));
-        $interceptor->onKernelController($event);
-
-        $this->assertTrue($resolveAsValidatorCalled);
-        $this->assertTrue($validateCalled);
+    public function requestContextCheckingDataProvider(): array
+    {
+        return [
+            'NotMasterRequest__ValidController' => [
+                'isMasterRequest' => false,
+                'getController' => [],
+                'expectedToCallResolveAsValidator' => false,
+                'expectedToCallValidate' => false,
+            ],
+            'IsMasterRequest__InvalidController' => [
+                'isMasterRequest' => true,
+                'getController' => true,
+                'expectedToCallResolveAsValidator' => false,
+                'expectedToCallValidate' => false,
+            ],
+            'NotMasterRequest__InvalidController' => [
+                'isMasterRequest' => false,
+                'getController' => true,
+                'expectedToCallResolveAsValidator' => false,
+                'expectedToCallValidate' => false,
+            ],
+            'IsMasterRequest__ValidController' => [
+                'isMasterRequest' => true,
+                'getController' => [],
+                'expectedToCallResolveAsValidator' => true,
+                'expectedToCallValidate' => true,
+            ],
+        ];
     }
 
     public function testUndeterminableValidator(): void
