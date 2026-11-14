@@ -96,6 +96,17 @@ class RequestInterceptorServiceTest extends TestCase
     }
 
     /**
+     * @param bool $isMasterRequestValue
+     * @param $getControllerValue
+     * @param bool $expectedToCallResolveAsValidator
+     * @param bool $expectedToCallValidate
+     *
+     * @return void
+     *
+     * @throws NonExistingErrorActionException
+     * @throws NonExistingValidatorProfileException
+     * @throws \ReflectionException
+     *
      * @dataProvider requestContextCheckingDataProvider
      */
     public function testRequestContextChecking(
@@ -103,8 +114,7 @@ class RequestInterceptorServiceTest extends TestCase
         $getControllerValue,
         bool $expectedToCallResolveAsValidator,
         bool $expectedToCallValidate
-    ): void
-    {
+    ): void {
         $resolveAsValidatorCalled = false;
         $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
         $controllerEventResolver->method('resolveAsValidator')->willReturnCallback(function () use (&$resolveAsValidatorCalled) {
@@ -217,8 +227,24 @@ class RequestInterceptorServiceTest extends TestCase
         $this->assertFalse($validateCalled);
     }
 
-    public function testValidityHandling(): void
-    {
+    /**
+     * @param bool $throwValidationErrorException
+     * @param bool $expectedToCallValidate
+     * @param bool $expectedGetErrorActionsCalled
+     *
+     * @return void
+     *
+     * @throws NonExistingErrorActionException
+     * @throws NonExistingValidatorProfileException
+     * @throws \ReflectionException
+     *
+     * @dataProvider validityHandlingDataProvider
+     */
+    public function testValidityHandling(
+        bool $throwValidationErrorException,
+        bool $expectedToCallValidate,
+        bool $expectedGetErrorActionsCalled
+    ): void {
         $resolveAsValidatorCalled = false;
         $getErrorActionsCalled = false;
         $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
@@ -250,37 +276,19 @@ class RequestInterceptorServiceTest extends TestCase
         });
 
         $validateCalled = false;
-        $requestValidator = $this->createMock(RequestValidator::class);
-        $requestValidator->method('validate')->willReturnCallback(function () use (&$validateCalled) {
-            $validateCalled = true;
-        });
 
         $providerCollection = $this->createMock(OpenAPIProviderCollectionInterface::class);
         $providerCollection->method('get')->willReturn($this->createMock(OpenAPIProviderInterface::class));
 
-        $interceptor = new RequestInterceptorService(
-            $requestValidator,
-            $providerCollection,
-            $controllerEventResolver,
-            ['@service.name']
-        );
-
-        $event = $this->createMock(FilterControllerEvent::class);
-        $event->method('isMasterRequest')->willReturn(true);
-        $event->method('getController')->willReturn([]);
-        $event->method('getRequest')->willReturn($this->createMock(Request::class));
-        $interceptor->onKernelController($event);
-
-        $this->assertTrue($validateCalled);
-        $this->assertFalse($getErrorActionsCalled);
-
-
         $requestValidator = $this->createMock(RequestValidator::class);
-        $requestValidator->method('validate')->willReturnCallback(function () use (&$validateCalled) {
+        $requestValidator->method('validate')->willReturnCallback(function () use (&$validateCalled, $throwValidationErrorException) {
             $validateCalled = true;
 
-            throw new ValidationErrorException(new \Exception());
+            if ($throwValidationErrorException) {
+                throw new ValidationErrorException(new \Exception());
+            }
         });
+
         $interceptor = new RequestInterceptorService(
             $requestValidator,
             $providerCollection,
@@ -293,10 +301,25 @@ class RequestInterceptorServiceTest extends TestCase
         $event->method('getRequest')->willReturn($this->createMock(Request::class));
         $interceptor->onKernelController($event);
 
-        $this->assertTrue($validateCalled);
-        $this->assertTrue($getErrorActionsCalled);
+        $this->assertEquals($expectedToCallValidate, $validateCalled);
+        $this->assertEquals($expectedGetErrorActionsCalled, $getErrorActionsCalled);
     }
 
+    public function validityHandlingDataProvider(): array
+    {
+        return [
+            'invalid' => [
+                'throwValidationErrorException' => true,
+                'expectedToCallValidate' => true,
+                'expectedGetErrorActionsCalled' => true,
+            ],
+            'valid' => [
+                'throwValidationErrorException' => false,
+                'expectedToCallValidate' => true,
+                'expectedGetErrorActionsCalled' => false,
+            ],
+        ];
+    }
 
     public function testActionTriggering(): void
     {
