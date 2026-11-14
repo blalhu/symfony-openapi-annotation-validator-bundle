@@ -321,21 +321,34 @@ class RequestInterceptorServiceTest extends TestCase
         ];
     }
 
-    public function testActionTriggering(): void
-    {
-        $resolveAsValidatorCalled = false;
-        $getErrorActionsCalled = false;
+    /**
+     * @param array $argumentSettings
+     * @param array $expectedErrorActions
+     * @param bool $nonExistingErrorActionException
+     *
+     * @return void
+     *
+     * @throws NonExistingErrorActionException
+     * @throws NonExistingValidatorProfileException
+     * @throws \ReflectionException
+     *
+     * @dataProvider actionTriggeringDataProvider
+     */
+    public function testActionTriggering(
+        array $argumentSettings,
+        array $expectedErrorActions,
+        bool $nonExistingErrorActionException
+    ): void {
         $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
-        $controllerEventResolver->method('resolveAsValidator')->willReturnCallback(function () use (&$resolveAsValidatorCalled, &$getErrorActionsCalled) {
-            $resolveAsValidatorCalled = true;
+        $controllerEventResolver->method('resolveAsValidator')->willReturnCallback(function () use ($argumentSettings) {
 
-            return new class($getErrorActionsCalled) implements ValidatorAnnotationInterface
+            return new class($argumentSettings) implements ValidatorAnnotationInterface
             {
-                private $getErrorActionsCalled;
+                private $argumentSettings;
 
-                public function __construct(&$getErrorActionsCalled)
+                public function __construct($argumentSettings)
                 {
-                    $this->getErrorActionsCalled =& $getErrorActionsCalled;
+                    $this->argumentSettings = $argumentSettings;
                 }
 
                 public function getProviderName(): string
@@ -346,18 +359,13 @@ class RequestInterceptorServiceTest extends TestCase
 
                 public function getErrorActions(): array
                 {
-                    $this->getErrorActionsCalled = true;
-
-                    return ['@service.name2', '@service.name3'];
+                    return $this->argumentSettings;
                 }
             };
         });
 
-        $validateCalled = false;
         $requestValidator = $this->createMock(RequestValidator::class);
-        $requestValidator->method('validate')->willReturnCallback(function () use (&$validateCalled) {
-            $validateCalled = true;
-
+        $requestValidator->method('validate')->willReturnCallback(function () {
             throw new ValidationErrorException(new \Exception());
         });
 
@@ -381,57 +389,31 @@ class RequestInterceptorServiceTest extends TestCase
         $event->method('isMasterRequest')->willReturn(true);
         $event->method('getController')->willReturn([]);
         $event->method('getRequest')->willReturn($this->createMock(Request::class));
+
+        if ($nonExistingErrorActionException) {
+            $this->expectException(NonExistingErrorActionException::class);
+        }
+
         $interceptor->onKernelController($event);
 
-        $this->assertEquals(['@service.name2', '@service.name3'], $calledServiceNames);
+        if (!$nonExistingErrorActionException) {
+            $this->assertEquals($expectedErrorActions, $calledServiceNames);
+        }
+    }
 
-
-        $controllerEventResolver = $this->createMock(ControllerEventResolver::class);
-        $controllerEventResolver->method('resolveAsValidator')->willReturnCallback(function () use (&$resolveAsValidatorCalled, &$getErrorActionsCalled) {
-            $resolveAsValidatorCalled = true;
-
-            return new class($getErrorActionsCalled) implements ValidatorAnnotationInterface
-            {
-                private $getErrorActionsCalled;
-
-                public function __construct(&$getErrorActionsCalled)
-                {
-                    $this->getErrorActionsCalled =& $getErrorActionsCalled;
-                }
-
-                public function getProviderName(): string
-                {
-                    return 'providerName';
-                }
-
-
-                public function getErrorActions(): array
-                {
-                    $this->getErrorActionsCalled = true;
-
-                    return ['@service.name2', '@service.name_non_existing'];
-                }
-            };
-        });
-
-        $calledServiceNames = [];
-        $interceptor = new RequestInterceptorService(
-            $requestValidator,
-            $providerCollection,
-            $controllerEventResolver,
-            [
-                '@service.name1' => new TestAction('@service.name1', $calledServiceNames),
-                '@service.name2' => new TestAction('@service.name2', $calledServiceNames),
-                '@service.name3' => new TestAction('@service.name3', $calledServiceNames),
-                '@service.name4' => new TestAction('@service.name4', $calledServiceNames),
-            ]
-        );
-
-        $event = $this->createMock(FilterControllerEvent::class);
-        $event->method('isMasterRequest')->willReturn(true);
-        $event->method('getController')->willReturn([]);
-        $event->method('getRequest')->willReturn($this->createMock(Request::class));
-        $this->expectException(NonExistingErrorActionException::class);
-        $interceptor->onKernelController($event);
+    public function actionTriggeringDataProvider(): array
+    {
+        return [
+            'correctSelection' => [
+                'argumentSettings' => ['@service.name2', '@service.name3'],
+                'expectedErrorActions' => ['@service.name2', '@service.name3'],
+                'expectedNonExistingErrorActionException' => false,
+            ],
+            'NonExistingErrorActionException' => [
+                'argumentSettings' => ['@service.name2', '@service.name_non_existing'],
+                'expectedErrorActions' => [],
+                'expectedNonExistingErrorActionException' => true,
+            ],
+        ];
     }
 }
