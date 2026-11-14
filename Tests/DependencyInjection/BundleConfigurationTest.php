@@ -2,6 +2,9 @@
 
 namespace Pelso\OpenAPIValidatorBundle\Tests\DependencyInjection;
 
+use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidator;
+use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
+use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Pelso\OpenAPIValidatorBundle\DependencyInjection\BundleConfiguration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -130,5 +133,61 @@ class BundleConfigurationTest extends TestCase
             new BundleConfiguration(),
             [['profiles' => [$profile, $profile]]]
         );
+    }
+
+
+    /**
+     * @param $annotation
+     *
+     * @return void
+     *
+     * @dataProvider invalidAnnotationDataProvider
+     */
+    public function testInvalidAnnotations($annotation): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Annotations must implement ValidatorAnnotationInterface or ValidatorProfile!');
+
+        (new Processor())->processConfiguration(
+            new BundleConfiguration(),
+            [['annotations' => [$annotation]]]
+        );
+    }
+
+    public function invalidAnnotationDataProvider(): array
+    {
+        return [
+            [null],
+            [1],
+            [1.1],
+            [\stdClass::class],
+            ['some string'],
+        ];
+    }
+
+    /**
+     * @param $annotation
+     *
+     * @return void
+     *
+     * @dataProvider validAnnotationDataProvider
+     */
+    public function testValidAnnotations($annotation): void
+    {
+        (new Processor())->processConfiguration(
+            new BundleConfiguration(),
+            [['annotations' => [$annotation]]]
+        );
+
+        $this->assertTrue(true);
+    }
+
+    public function validAnnotationDataProvider(): array
+    {
+        return [
+            [DefaultValidator::class],
+            [Validator::class],
+            [ValidatorProfile::class],
+        ];
     }
 }
