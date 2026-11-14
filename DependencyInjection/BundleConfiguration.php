@@ -44,13 +44,12 @@ class BundleConfiguration implements ConfigurationInterface
                     ->validate()
                         ->ifTrue(function (array $annotations): bool {
                             foreach ($annotations as $annotation) {
-                                if (
-                                    !is_string($annotation)
+                                if (!is_string($annotation)
                                     || (
                                         $annotation !== ValidatorProfile::class
                                         && !is_a($annotation, ValidatorAnnotationInterface::class, true)
                                     )
-                                ){
+                                ) {
                                     return true;
                                 }
                             }
