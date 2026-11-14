@@ -1,5 +1,4 @@
 <?php
-//TODO: clean up this mess -- dry out the code
 // TODO: Verify validation receives the exact request and selected provider.
 // TODO: Verify error actions receive the original exception and controller event.
 
@@ -210,11 +209,9 @@ class RequestInterceptorServiceTest extends TestCase
         bool $expectedToCallValidate,
         bool $expectedGetErrorActionsCalled
     ): void {
-        $resolveAsValidatorCalled = false;
         $getErrorActionsCalled = false;
         $this->controllerEventResolver->method('resolveAsValidator')
-            ->willReturnCallback(function () use (&$resolveAsValidatorCalled, &$getErrorActionsCalled) {
-                $resolveAsValidatorCalled = true;
+            ->willReturnCallback(function () use (&$getErrorActionsCalled) {
 
                 return new class($getErrorActionsCalled) implements ValidatorAnnotationInterface
             {
