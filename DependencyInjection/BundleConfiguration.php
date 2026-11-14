@@ -42,7 +42,7 @@ class BundleConfiguration implements ConfigurationInterface
                         ValidatorProfile::class
                     ])
                     ->validate()
-                        ->ifFalse(function (array $annotations): bool {
+                        ->ifTrue(function (array $annotations): bool {
                             foreach ($annotations as $annotation) {
                                 if (
                                     !is_string($annotation)
@@ -51,11 +51,11 @@ class BundleConfiguration implements ConfigurationInterface
                                         && !is_a($annotation, ValidatorAnnotationInterface::class, true)
                                     )
                                 ){
-                                    return false;
+                                    return true;
                                 }
                             }
 
-                            return true;
+                            return false;
                         })
                         ->thenInvalid('Annotations must implement ValidatorAnnotationInterface or ValidatorProfile!')
                     ->end()
