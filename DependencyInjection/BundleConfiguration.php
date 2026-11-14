@@ -169,6 +169,21 @@ class BundleConfiguration implements ConfigurationInterface
                     ->end()
                 ->end()
             ->end()
+            ->validate()
+                ->ifTrue(function (array $config): bool {
+                    return $this->arrayFieldUniquenessChecker(
+                        'name',
+                        array_merge(
+                            $config['openapi_provider_list'],
+                            $config['openapi_yaml_list'],
+                            $config['openapi_json_list']
+                        )
+                    );
+                })
+                ->thenInvalid(
+                    'Names must be unique across openapi_provider_list, openapi_yaml_list and openapi_json_list.'
+                )
+            ->end()
         ;
 
         return $treeBuilder;

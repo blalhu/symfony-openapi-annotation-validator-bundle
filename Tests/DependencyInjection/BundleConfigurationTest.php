@@ -92,6 +92,29 @@ class BundleConfigurationTest extends TestCase
         );
     }
 
+    public function testDuplicatedNamesAreRejectedAcrossProviderTypes(): void
+    {
+        $yamlProvider = [
+            'name' => 'name1',
+            'uri' => '/foo/bar',
+        ];
+        $provider = [
+            'name' => 'name1',
+            'service' => '@service.name',
+        ];
+
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Names must be unique across openapi_provider_list, openapi_yaml_list and openapi_json_list.');
+
+        (new Processor())->processConfiguration(
+            new BundleConfiguration(),
+            [
+                ['openapi_yaml_list' => [$yamlProvider]],
+                ['openapi_provider_list' => [$provider]],
+            ]
+        );
+    }
+
     public function testDuplicateProfileNamesAreRejected(): void
     {
         $profile = [
