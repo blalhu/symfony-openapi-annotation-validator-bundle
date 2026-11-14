@@ -15,6 +15,7 @@ use Pelso\OpenAPIValidatorBundle\Tests\Interceptor\ClassAndMethodAnnotationContr
 use Pelso\OpenAPIValidatorBundle\Tests\Interceptor\ClassAnnotationController;
 use Pelso\OpenAPIValidatorBundle\Tests\Interceptor\DefaultAnnotationController;
 use Pelso\OpenAPIValidatorBundle\Tests\Interceptor\MethodAnnotationController;
+use Pelso\OpenAPIValidatorBundle\Tests\Interceptor\NoAnnotationController;
 use Pelso\OpenAPIValidatorBundle\Tests\Interceptor\ProfileAnnotationController;
 use PHPUnit\Framework\TestCase;
 use Respect\Validation\Rules\Control;
@@ -159,5 +160,22 @@ class ControllerEventResolverTest extends TestCase
         ]);
 
         return $controllerEvent;
+    }
+
+    public function testNoAnnotation(): void
+    {
+        $resolver = new ControllerEventResolver(
+            $this->validatorProfileResolver,
+            $this->validatorAnnotationClasses
+        );
+
+        $this->expectException(UndeterminableValidatorException::class);
+
+        $resolver->resolveAsValidator(
+            $this->getControllerEventMock(
+                new NoAnnotationController(),
+                'defaultAction'
+            )
+        );
     }
 }
