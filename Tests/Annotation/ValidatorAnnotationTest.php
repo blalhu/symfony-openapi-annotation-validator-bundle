@@ -38,4 +38,26 @@ class ValidatorAnnotationTest extends TestCase
             $this->loadedAnnotation->getProviderName()
         );
     }
+
+    public function testDefaultErrorMessageFormatter(): void
+    {
+        $this->assertEquals(
+            '@pelso.openapi_validator_bundle.validation_error_message_formatter.default',
+            $this->loadedAnnotation->getErrorMessageFormatter()
+        );
+    }
+
+    public function testCustomErrorMessageFormatter(): void
+    {
+        $checker = new ValidatorAnnotationCheckerWithFormatter();
+        $reflectionClass = new \ReflectionClass($checker);
+        $reader = new AnnotationReader();
+        /** @var ValidatorAnnotationInterface $annotation */
+        $loadedAnnotation = $reader->getClassAnnotation($reflectionClass, Validator::class);
+
+        $this->assertEquals(
+            '@my.custom.message.formatter',
+            $loadedAnnotation->getErrorMessageFormatter()
+        );
+    }
 }

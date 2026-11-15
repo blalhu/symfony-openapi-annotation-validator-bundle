@@ -37,4 +37,12 @@ class DefaultValidatorAnnotationTest extends TestCase
             $this->loadedAnnotation->getProviderName()
         );
     }
+
+    public function testDefaultErrorMessageFormatter(): void
+    {
+        $this->assertEquals(
+            '@pelso.openapi_validator_bundle.validation_error_message_formatter.default',
+            $this->loadedAnnotation->getErrorMessageFormatter()
+        );
+    }
 }
