@@ -125,6 +125,7 @@ class ControllerEventResolverTest extends TestCase
             'profiles' => [[
                 'profile_name' => 'v_profile_name',
                 'provider_name' => 'provider1',
+                'error_message_formatter' => '',
                 'error_actions' => [
                     '@action1',
                     '@action2',

@@ -9,4 +9,6 @@ interface ValidatorAnnotationInterface
     public function getProviderName(): string;
 
     public function getErrorActions(): array;
+
+    public function getErrorMessageFormatter(): string;
 }

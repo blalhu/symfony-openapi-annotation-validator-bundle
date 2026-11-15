@@ -14,6 +14,7 @@ class BundleConfiguration implements ConfigurationInterface
     const REQUEST_INTERCEPTOR = 'pelso.openapi_validator_bundle.request_interceptor';
     const VALIDATOR = 'pelso.openapi_validator_bundle.validator';
     const PROVIDER_COLLECTION = 'pelso.openapi_validator_bundle.provider_collection';
+    const ERROR_MESSAGE_FORMATTER = 'pelso.openapi_validator_bundle.validation_error_message_formatter.default';
 
     /**
      * @inheritDoc
@@ -142,6 +143,9 @@ class BundleConfiguration implements ConfigurationInterface
                             ->scalarNode('provider_name')
                                 ->isRequired()
                                 ->cannotBeEmpty()
+                            ->end()
+                            ->scalarNode('error_message_formatter')
+                                ->defaultValue('@' . self::ERROR_MESSAGE_FORMATTER)
                             ->end()
                             ->arrayNode('error_actions')
                                 ->isRequired()

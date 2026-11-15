@@ -45,6 +45,7 @@ class BadRequestResponseErrorActionTest extends TestCase
         });
 
         (new BadRequestResponseErrorAction([$errorController, 'badRequestAction']))->triggerAction(
+            '',
             new ValidationErrorException(new \Exception()),
             $filterControllerEvent
         );

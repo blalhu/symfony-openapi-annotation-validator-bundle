@@ -5,6 +5,7 @@ namespace Pelso\OpenAPIValidatorBundle\Annotation;
 use Doctrine\Common\Annotations\Annotation\Target;
 use Pelso\OpenAPIValidatorBundle\Action\BadRequestResponseErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\ErrorActionInterface;
+use Pelso\OpenAPIValidatorBundle\DependencyInjection\BundleConfiguration;
 
 /**
  * @Annotation
@@ -28,5 +29,10 @@ final class DefaultValidator implements ValidatorAnnotationInterface
     public function getProviderName(): string
     {
         return 'default';
+    }
+
+    public function getErrorMessageFormatter(): string
+    {
+        return '@' . BundleConfiguration::ERROR_MESSAGE_FORMATTER;
     }
 }

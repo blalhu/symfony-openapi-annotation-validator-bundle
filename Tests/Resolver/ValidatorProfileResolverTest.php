@@ -55,6 +55,7 @@ class ValidatorProfileResolverTest extends TestCase
             'profiles' => [[
                 'profile_name' => 'profile_x1',
                 'provider_name' => 'provider1',
+                'error_message_formatter' => '',
                 'error_actions' => [
                     '@action1',
                     '@action2',

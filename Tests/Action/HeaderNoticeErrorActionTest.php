@@ -47,9 +47,10 @@ class HeaderNoticeErrorActionTest extends TestCase
         });
 
         (new HeaderNoticeErrorAction())->triggerAction(
+            self::EXCEPTION_TEXT,
             new ValidationErrorException(
                 new \Exception(
-                    self::EXCEPTION_TEXT
+                    '----'
                 )
             ),
             $eventMock

@@ -18,13 +18,14 @@ class BadRequestResponseControllerTest extends TestCase
                 new ValidationErrorException(
                     new \Exception('original_test_message'),
                     'test_message'
-                )
+                ),
+                'formatted_error_message'
             );
 
         $this->assertEquals(get_class($response), JsonResponse::class);
         $this->assertEquals(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
         $responseArray = json_decode($response->getContent(), true);
         $this->assertTrue(array_key_exists('error_message', $responseArray));
-        $this->assertEquals('original_test_message', $responseArray['error_message']);
+        $this->assertEquals('formatted_error_message', $responseArray['error_message']);
     }
 }

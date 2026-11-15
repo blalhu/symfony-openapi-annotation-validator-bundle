@@ -12,9 +12,13 @@ class ExceptionErrorAction implements ErrorActionInterface
     }
 
     public function triggerAction(
+        string $formattedErrorMessage,
         ValidationErrorException $exception,
         FilterControllerEvent $controllerEvent
     ): void {
-        throw $exception;
+        throw new ValidationErrorException(
+            $exception->getPrevious(),
+            $formattedErrorMessage
+        );
     }
 }

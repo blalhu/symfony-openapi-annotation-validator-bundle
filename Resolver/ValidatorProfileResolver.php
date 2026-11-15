@@ -36,6 +36,7 @@ class ValidatorProfileResolver
         $annotation = new Validator();
         $annotation->providerName = $profileConfig['provider_name'];
         $annotation->errorActions = $profileConfig['error_actions'];
+        $annotation->errorMessageFormatter = $profileConfig['error_message_formatter'];
 
         return $annotation;
     }

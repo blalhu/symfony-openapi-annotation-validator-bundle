@@ -17,11 +17,12 @@ class LogErrorAction implements ErrorActionInterface
     }
 
     public function triggerAction(
+        string $formattedErrorMessage,
         ValidationErrorException $exception,
         FilterControllerEvent $controllerEvent
     ): void {
         $this->logger->error(
-            $exception->getPrevious()->getMessage(),
+            $formattedErrorMessage,
             [$exception]
         );
     }

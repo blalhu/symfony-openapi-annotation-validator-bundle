@@ -6,10 +6,8 @@ use Pelso\OpenAPIValidatorBundle\Action\BadRequestResponseErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\ExceptionErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\HeaderNoticeErrorAction;
 use Pelso\OpenAPIValidatorBundle\Action\LogErrorAction;
-use Pelso\OpenAPIValidatorBundle\Annotation\DefaultValidator;
-use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
-use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollection;
+use Pelso\OpenAPIValidatorBundle\Formatter\PassThroughErrorExceptionMessageFormatter;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorService;
 use Pelso\OpenAPIValidatorBundle\Resolver\ControllerEventResolver;
 use Pelso\OpenAPIValidatorBundle\Resolver\ValidatorProfileResolver;
@@ -46,6 +44,8 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
 
         $container = $this->defineValidatorProfileResolver($configs, $container);
         $container = $this->defineControllerEventResolver($configs, $container);
+
+        $container = $this->defineDefaultFormatter($configs, $container);
     }
 
     private function defineErrorActions(array $configs, ContainerBuilder $container): ContainerBuilder
@@ -82,31 +82,44 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
                 preg_replace('/^\@/', '', $configs['interceptor'])
             );
         } else {
-            $errorActionServiceIds = array_keys($container->findTaggedServiceIds('pelso.error_action'));
             $container
                 ->register(BundleConfiguration::REQUEST_INTERCEPTOR)
                 ->setClass(RequestInterceptorService::class)
                 ->addArgument(new Reference(BundleConfiguration::VALIDATOR))
                 ->addArgument(new Reference(BundleConfiguration::PROVIDER_COLLECTION))
                 ->addArgument(new Reference(ControllerEventResolver::class))
-                ->addArgument(array_combine(
-                    array_map(
-                        function (string $serviceId): string {
-                            return '@'.$serviceId;
-                        },
-                        $errorActionServiceIds
-                    ),
-                    array_map(
-                        function (string $serviceId) use ($container) {
-                            return new Reference($serviceId);
-                        },
-                        $errorActionServiceIds
+                ->addArgument(
+                    $this->getServiceList(
+                        array_keys($container->findTaggedServiceIds('pelso.error_action'))
                     )
-                ))
+                )
+                ->addArgument(
+                    $this->getServiceList(
+                        array_keys($container->findTaggedServiceIds('pelso.validation_error_message_formatterpelso.error_actionpelso.error_action'))
+                    )
+                )
                 ->addTag('kernel.event_listener', ['event' => 'kernel.controller']);
         }
 
         return $container;
+    }
+
+    private function getServiceList(array $serviceIds): array
+    {
+        return array_combine(
+            array_map(
+                function (string $serviceId): string {
+                    return '@'.$serviceId;
+                },
+                $serviceIds
+            ),
+            array_map(
+                function (string $serviceId) {
+                    return new Reference($serviceId);
+                },
+                $serviceIds
+            )
+        );
     }
 
     private function defineValidator(array $configs, ContainerBuilder $container): ContainerBuilder
@@ -181,6 +194,18 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
             ->addArgument(new Reference(ValidatorProfileResolver::class))
             ->addArgument($configs['annotations'])
         ;
+
+        return $container;
+    }
+
+    public function defineDefaultFormatter(
+        array $configs,
+        ContainerBuilder $container
+    ): ContainerBuilder {
+        $container
+            ->register(BundleConfiguration::ERROR_MESSAGE_FORMATTER)
+            ->setClass(PassThroughErrorExceptionMessageFormatter::class)
+            ->addTag('pelso.validation_error_message_formatter');
 
         return $container;
     }

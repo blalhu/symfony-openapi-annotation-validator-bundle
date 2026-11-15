@@ -19,6 +19,7 @@ class LogErrorActionTest extends TestCase
             )
         );
         (new LogErrorAction($logger))->triggerAction(
+            '',
             new ValidationErrorException(new \Exception()),
             $this->createMock(FilterControllerEvent::class)
         );

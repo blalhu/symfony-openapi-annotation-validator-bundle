@@ -23,6 +23,7 @@ class ExceptionErrorActionTest extends TestCase
         $this->expectException(ValidationErrorException::class);
 
         (new ExceptionErrorAction())->triggerAction(
+            '',
             new ValidationErrorException(new \Exception()),
             $this->createMock(FilterControllerEvent::class)
         );

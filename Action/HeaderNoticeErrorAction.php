@@ -14,12 +14,13 @@ class HeaderNoticeErrorAction implements ErrorActionInterface
     }
 
     public function triggerAction(
+        string $formattedErrorMessage,
         ValidationErrorException $exception,
         FilterControllerEvent $controllerEvent
     ): void {
         $controllerEvent->getRequest()->headers->set(
             self::HEADER_KEY,
-            $exception->getPrevious()->getMessage()
+            $formattedErrorMessage
         );
     }
 

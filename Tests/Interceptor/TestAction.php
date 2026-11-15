@@ -23,6 +23,7 @@ class TestAction implements ErrorActionInterface
     }
 
     public function triggerAction(
+        string $formattedErrorMessage,
         ValidationErrorException $exception,
         FilterControllerEvent $controllerEvent
     ): void {

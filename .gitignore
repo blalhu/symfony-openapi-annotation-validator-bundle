@@ -11,6 +11,7 @@
 !/Controller
 !/DependencyInjection
 !/Exceptions
+!/Formatter
 !/Interceptor
 !/Provider
 !/Resolver

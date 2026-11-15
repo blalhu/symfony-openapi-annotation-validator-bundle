@@ -9,11 +9,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 class BadRequestResponseController extends Controller
 {
-    public function badRequestAction(ValidationErrorException $exception): Response
-    {
+    public function badRequestAction(
+        ValidationErrorException $exception,
+        string $formattedErrorMessage
+    ): Response {
         return new JsonResponse(
             [
-                'error_message' => $exception->getPrevious()->getMessage()
+                'error_message' => $formattedErrorMessage
             ],
             Response::HTTP_BAD_REQUEST
         );

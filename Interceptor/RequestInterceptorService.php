@@ -9,6 +9,7 @@ use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingValidatorProfileException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\UndeterminableValidatorException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
+use Pelso\OpenAPIValidatorBundle\Formatter\ValidationErrorExceptionMessageFormatterInterface;
 use Pelso\OpenAPIValidatorBundle\Resolver\ControllerEventResolver;
 use Pelso\OpenAPIValidatorBundle\Validator\RequestValidatorInterface;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
@@ -24,18 +25,30 @@ class RequestInterceptorService implements RequestInterceptorInterface
     /** @var ControllerEventResolver */
     private $controllerEventResolver;
 
+    /** @var ValidationErrorExceptionMessageFormatterInterface[] */
+    private $errorMessageFormatterServices;
+
     /** @var ErrorActionInterface[] */
     private $errorActionServices = [];
 
+    /**
+     * @param RequestValidatorInterface $requestValidator
+     * @param OpenAPIProviderCollectionInterface $providerCollection
+     * @param ControllerEventResolver $controllerEventResolver
+     * @param ValidationErrorExceptionMessageFormatterInterface[] $errorMessageFormatterServices
+     * @param ErrorActionInterface[] $errorActionServices
+     */
     public function __construct(
         RequestValidatorInterface $requestValidator,
         OpenAPIProviderCollectionInterface $providerCollection,
         ControllerEventResolver $controllerEventResolver,
+        array $errorMessageFormatterServices,
         array $errorActionServices
     ) {
         $this->requestValidator = $requestValidator;
         $this->providerCollection = $providerCollection;
         $this->controllerEventResolver = $controllerEventResolver;
+        $this->errorMessageFormatterServices = $errorMessageFormatterServices;
         $this->errorActionServices = $errorActionServices;
     }
 
@@ -73,6 +86,7 @@ class RequestInterceptorService implements RequestInterceptorInterface
                     throw new NonExistingErrorActionException();
                 }
                 $this->errorActionServices[$errorActionServiceId]->triggerAction(
+                    $this->errorMessageFormatterServices[$annotation->getErrorMessageFormatter()]->format($exception),
                     $exception,
                     $filterControllerEvent
                 );

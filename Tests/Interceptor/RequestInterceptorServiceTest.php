@@ -15,10 +15,12 @@ use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorAnnotationInterface;
 use Pelso\OpenAPIValidatorBundle\Annotation\ValidatorProfile;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollection;
 use Pelso\OpenAPIValidatorBundle\Collection\OpenAPIProviderCollectionInterface;
+use Pelso\OpenAPIValidatorBundle\DependencyInjection\BundleConfiguration;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingErrorActionException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\NonExistingValidatorProfileException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\UndeterminableValidatorException;
 use Pelso\OpenAPIValidatorBundle\Exceptions\ValidationErrorException;
+use Pelso\OpenAPIValidatorBundle\Formatter\ValidationErrorExceptionMessageFormatterInterface;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorInterface;
 use Pelso\OpenAPIValidatorBundle\Interceptor\RequestInterceptorService;
 use Pelso\OpenAPIValidatorBundle\Provider\AbstractOpenAPIProvider;
@@ -107,6 +109,11 @@ class RequestInterceptorServiceTest extends TestCase
                     {
                         return [];
                     }
+
+                    public function getErrorMessageFormatter(): string
+                    {
+                        return BundleConfiguration::ERROR_MESSAGE_FORMATTER;
+                    }
                 };
             });
 
@@ -119,6 +126,7 @@ class RequestInterceptorServiceTest extends TestCase
             $this->requestValidator,
             $this->providerCollection,
             $this->controllerEventResolver,
+            [ BundleConfiguration::ERROR_MESSAGE_FORMATTER => BundleConfiguration::ERROR_MESSAGE_FORMATTER ],
             ['@service.name']
         );
 
@@ -182,6 +190,7 @@ class RequestInterceptorServiceTest extends TestCase
             $this->requestValidator,
             $this->providerCollection,
             $this->controllerEventResolver,
+            [ BundleConfiguration::ERROR_MESSAGE_FORMATTER => BundleConfiguration::ERROR_MESSAGE_FORMATTER ],
             ['@service.name']
         );
 
@@ -234,6 +243,11 @@ class RequestInterceptorServiceTest extends TestCase
 
                         return [];
                     }
+
+                    public function getErrorMessageFormatter(): string
+                    {
+                        return BundleConfiguration::ERROR_MESSAGE_FORMATTER;
+                    }
                 };
             });
 
@@ -252,6 +266,7 @@ class RequestInterceptorServiceTest extends TestCase
             $this->requestValidator,
             $this->providerCollection,
             $this->controllerEventResolver,
+            [ BundleConfiguration::ERROR_MESSAGE_FORMATTER => BundleConfiguration::ERROR_MESSAGE_FORMATTER ],
             ['@service.name']
         );
         $interceptor->onKernelController($this->event);
@@ -316,6 +331,11 @@ class RequestInterceptorServiceTest extends TestCase
                     {
                         return $this->argumentSettings;
                     }
+
+                    public function getErrorMessageFormatter(): string
+                    {
+                        return BundleConfiguration::ERROR_MESSAGE_FORMATTER;
+                    }
                 };
             });
 
@@ -328,6 +348,7 @@ class RequestInterceptorServiceTest extends TestCase
             $this->requestValidator,
             $this->providerCollection,
             $this->controllerEventResolver,
+            [ BundleConfiguration::ERROR_MESSAGE_FORMATTER => $this->createMock(ValidationErrorExceptionMessageFormatterInterface::class) ],
             [
                 '@service.name1' => new TestAction('@service.name1', $calledServiceNames),
                 '@service.name2' => new TestAction('@service.name2', $calledServiceNames),
