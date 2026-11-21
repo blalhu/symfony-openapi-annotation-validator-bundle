@@ -28,7 +28,7 @@ class TestKernel extends Kernel
      */
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
-        $loader->load(function(ContainerBuilder $containerBuilder) {
+        $loader->load(function (ContainerBuilder $containerBuilder) {
             $containerBuilder->register('logger', NullLogger::class);
             $containerBuilder->loadFromExtension(
                 'framework',
@@ -50,7 +50,8 @@ class TestKernel extends Kernel
                             'uri' => '%kernel.root_dir%/Resources/openapi.yaml',
                         ]
                     ]
-                ]);
+                ]
+            );
         });
     }
 
