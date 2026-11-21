@@ -17,13 +17,18 @@
 !/Resolver
 !/Resources
 !/Tests
+/Tests/Integration/cache/*
+!/Tests/Integration/cache/.gitkeep
+/Tests/Integration/logs/*
+!/Tests/Integration/logs/.gitkeep
 !/Service
 /vendor/
 !/Validator
 !/phpunit.xml
-!/coverage/
-/coverage/*
-!/coverage/.gitkeep
+/Tests/Unit/coverage/*
+!/Tests/Unit/coverage/.gitkeep
+/Tests/Integration/coverage/*
+!/Tests/Integration/coverage/.gitkeep
 !/.github
 
 !/composer.*

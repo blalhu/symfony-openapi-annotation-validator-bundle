@@ -37,6 +37,7 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
         );
 
         $container = $this->defineErrorActions($configs, $container);
+        $container = $this->defineDefaultFormatter($configs, $container);
 
         $container = $this->defineRequestInterceptor($configs, $container);
         $container = $this->defineValidator($configs, $container);
@@ -44,8 +45,6 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
 
         $container = $this->defineValidatorProfileResolver($configs, $container);
         $container = $this->defineControllerEventResolver($configs, $container);
-
-        $container = $this->defineDefaultFormatter($configs, $container);
     }
 
     private function defineErrorActions(array $configs, ContainerBuilder $container): ContainerBuilder
@@ -90,12 +89,12 @@ class PelsoOpenAPIValidatorBundleExtension extends Extension
                 ->addArgument(new Reference(ControllerEventResolver::class))
                 ->addArgument(
                     $this->getServiceList(
-                        array_keys($container->findTaggedServiceIds('pelso.error_action'))
+                        array_keys($container->findTaggedServiceIds('pelso.validation_error_message_formatter'))
                     )
                 )
                 ->addArgument(
                     $this->getServiceList(
-                        array_keys($container->findTaggedServiceIds('pelso.validation_error_message_formatterpelso.error_actionpelso.error_action'))
+                        array_keys($container->findTaggedServiceIds('pelso.error_action'))
                     )
                 )
                 ->addTag('kernel.event_listener', ['event' => 'kernel.controller']);

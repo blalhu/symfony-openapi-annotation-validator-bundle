@@ -1,0 +1,30 @@
+openapi: 3.0.0
+info:
+  title: Default annotation integration test
+  version: 1.0.0
+paths:
+  /default_method_annotation:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, name, date]
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: example
+                date:
+                  type: string
+                  format: date
+                  example: '2026-11-21'
+      responses:
+        '200':
+          description: Request accepted
+        '400':
+          description: Invalid request body

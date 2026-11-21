@@ -24,10 +24,10 @@ class BadRequestResponseErrorAction implements ErrorActionInterface
         ValidationErrorException $exception,
         FilterControllerEvent $controllerEvent
     ): void {
-        $controllerEvent->setController(function () use ($exception) {
+        $controllerEvent->setController(function () use ($exception, $formattedErrorMessage) {
             return call_user_func_array(
                 $this->badRequestAction,
-                [$exception]
+                [$exception, $formattedErrorMessage]
             );
         });
     }

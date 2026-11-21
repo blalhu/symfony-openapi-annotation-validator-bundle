@@ -33,31 +33,34 @@ docker run -it --user=root --volume ./:/home/app/docroot pelso/php-dev-xdebug:7.
 
 ### Tests
 
-Run the unit tests:
+Run the unit suite in `Tests/Unit`:
 
 ```shell
-./vendor/bin/phpunit --testdox
+./vendor/bin/phpunit --testsuite unit --testdox
 ```
 
 or if you don't have php installed:
 
 ```shell
-docker run -it --user=root --volume ./:/home/app/docroot pelso/php-dev-xdebug:7.2 ./vendor/bin/phpunit --testdox
+docker run -it --user=root --volume ./:/home/app/docroot pelso/php-dev-xdebug:7.2 ./vendor/bin/phpunit --testsuite unit --testdox
 ```
 
 (or with another container having a composer)
 
+Framework integration tests go in `Tests/Integration` and use `--testsuite integration`.
+
 ### Code coverage
 
-Generate coverage:
+Generate a separate HTML report for each suite.
 
 ```shell
-XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html coverage
+XDEBUG_MODE=coverage ./vendor/bin/phpunit --testsuite unit --coverage-html Tests/Unit/coverage
+XDEBUG_MODE=coverage ./vendor/bin/phpunit --testsuite integration --coverage-html Tests/Integration/coverage
 ```
 
-or if you don't have php installed:
-
+To run either command in Docker:
 
 ```shell
-docker run -it --user=root --volume ./:/home/app/docroot -e XDEBUG_MODE=coverage pelso/php-dev-xdebug:7.2 ./vendor/bin/phpunit --coverage-html coverage
+docker run -it --user=root --volume ./:/home/app/docroot -e XDEBUG_MODE=coverage pelso/php-dev-xdebug:7.2 ./vendor/bin/phpunit --testsuite unit --coverage-html Tests/Unit/coverage
+docker run -it --user=root --volume ./:/home/app/docroot -e XDEBUG_MODE=coverage pelso/php-dev-xdebug:7.2 ./vendor/bin/phpunit --testsuite integration --coverage-html Tests/Integration/coverage
 ```
