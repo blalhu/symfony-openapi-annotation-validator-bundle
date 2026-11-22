@@ -13,9 +13,16 @@ class TestKernel extends Kernel
 {
     private $extensionConfig;
 
+    private $loggerClass = NullLogger::class;
+
     public function setExtensionConfig(array $extensionConfig): void
     {
         $this->extensionConfig = $extensionConfig;
+    }
+
+    public function setLoggerClass(string $loggerClass): void
+    {
+        $this->loggerClass = $loggerClass;
     }
 
     /**
@@ -35,7 +42,7 @@ class TestKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
         $loader->load(function (ContainerBuilder $containerBuilder) {
-            $containerBuilder->register('logger', NullLogger::class);
+            $containerBuilder->register('logger', $this->loggerClass);
             $containerBuilder->loadFromExtension(
                 'framework',
                 [
@@ -81,6 +88,10 @@ class TestKernel extends Kernel
     {
         return parent::getContainerClass()
             . '_'
-            . sha1(json_encode($this->extensionConfig));
+            . sha1(json_encode([
+                'logger' => $this->loggerClass,
+                'config' => $this->extensionConfig,
+                'time' => microtime(),
+            ]));
     }
 }
