@@ -6,7 +6,7 @@ use Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\TestKernel;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-class DefaultAnnotationTest extends ExtensionKernelTestCase
+class DefaultMethodAnnotationTest extends ExtensionKernelTestCase
 {
     public function testInvalidCase(): void
     {
