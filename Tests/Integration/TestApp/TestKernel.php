@@ -11,6 +11,12 @@ use Symfony\Component\HttpKernel\Kernel;
 
 class TestKernel extends Kernel
 {
+    private $extensionConfig;
+
+    public function setExtensionConfig(array $extensionConfig): void
+    {
+        $this->extensionConfig = $extensionConfig;
+    }
 
     /**
      * @inheritDoc
@@ -43,14 +49,7 @@ class TestKernel extends Kernel
             );
             $containerBuilder->loadFromExtension(
                 'pelso_open_api_validator_bundle',
-                [
-                    'openapi_yaml_list' => [
-                        [
-                            'name' => 'default',
-                            'uri' => '%kernel.root_dir%/Resources/openapi.yaml',
-                        ]
-                    ]
-                ]
+                $this->extensionConfig
             );
         });
     }
@@ -76,5 +75,12 @@ class TestKernel extends Kernel
             . '..'
             . DIRECTORY_SEPARATOR
             . 'logs';
+    }
+
+    protected function getContainerClass()
+    {
+        return parent::getContainerClass()
+            . '_'
+            . sha1(json_encode($this->extensionConfig));
     }
 }

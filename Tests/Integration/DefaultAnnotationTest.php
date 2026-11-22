@@ -6,14 +6,8 @@ use Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\TestKernel;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-class DefaultAnnotationTest extends KernelTestCase
+class DefaultAnnotationTest extends ExtensionKernelTestCase
 {
-    protected static function getKernelClass(): string
-    {
-        return TestKernel::class;
-    }
-
-
     public function testInvalidCase(): void
     {
         self::bootKernel();
@@ -30,5 +24,17 @@ class DefaultAnnotationTest extends KernelTestCase
         $response = static::$kernel->handle($request);
 
         $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    protected static function getExtensionConfig(): array
+    {
+        return [
+            'openapi_yaml_list' => [
+                [
+                    'name' => 'default',
+                    'uri' => '%kernel.root_dir%/Resources/openapi.yaml',
+                ]
+            ]
+        ];
     }
 }
