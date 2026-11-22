@@ -13,7 +13,16 @@ class TestKernel extends Kernel
 {
     private $extensionConfig;
 
+    private $containerSuffix;
+
     private $loggerClass = NullLogger::class;
+
+    public function __construct($environment, $debug)
+    {
+        parent::__construct($environment, $debug);
+
+        $this->containerSuffix = bin2hex(random_bytes(12));
+    }
 
     public function setExtensionConfig(array $extensionConfig): void
     {
@@ -88,10 +97,6 @@ class TestKernel extends Kernel
     {
         return parent::getContainerClass()
             . '_'
-            . sha1(json_encode([
-                'logger' => $this->loggerClass,
-                'config' => $this->extensionConfig,
-                'time' => microtime(),
-            ]));
+            . $this->containerSuffix;
     }
 }
