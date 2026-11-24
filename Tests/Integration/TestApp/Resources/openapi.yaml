@@ -3,7 +3,15 @@ info:
   title: Default annotation integration test
   version: 1.0.0
 paths:
-  /default_method_annotation:
+  /default_{classOrMethod}_annotation:
+    parameters:
+      - in: path
+        name: classOrMethod
+        required: true
+        schema:
+          type: string
+          enum: [ 'class', 'method' ]
+
     post:
       requestBody:
         required: true
