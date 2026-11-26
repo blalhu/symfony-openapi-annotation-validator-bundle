@@ -15,3 +15,9 @@ default_class_annotation:
   methods: [ POST ]
   defaults:
     _controller: \Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\Controller\DefaultClassAnnotationController::postAction
+
+validator_annotation:
+  path: /validator_annotation
+  methods: [ POST ]
+  defaults:
+    _controller: \Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\Controller\ValidatorAnnotationController::postAction
