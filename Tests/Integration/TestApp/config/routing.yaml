@@ -21,3 +21,9 @@ validator_annotation:
   methods: [ POST ]
   defaults:
     _controller: \Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\Controller\ValidatorAnnotationController::postAction
+
+profile_validator_annotation:
+  path: /profile_validator_annotation
+  methods: [ POST ]
+  defaults:
+    _controller: \Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\Controller\ProfileAnnotationController::postAction

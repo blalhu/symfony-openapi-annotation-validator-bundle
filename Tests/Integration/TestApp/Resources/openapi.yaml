@@ -14,6 +14,7 @@ paths:
             - 'default_class'
             - 'default_method'
             - 'validator'
+            - 'profile_validator'
 
     post:
       requestBody:
