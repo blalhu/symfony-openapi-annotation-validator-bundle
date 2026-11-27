@@ -15,6 +15,7 @@ paths:
             - 'default_method'
             - 'validator'
             - 'profile_validator'
+            - 'class_method_override'
 
     post:
       requestBody:

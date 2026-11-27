@@ -1,0 +1,35 @@
+<?php
+
+namespace Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\Controller;
+
+use \Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Pelso\OpenAPIValidatorBundle\Annotation\Validator;
+
+/**
+ * @Validator(
+ *      providerName="default",
+ *      errorActions={
+ *           "@pelso.openapi_validator_bundle.error_action.bad_request_response",
+ *           "@pelso.openapi_validator_bundle.error_action.log"
+ *      }
+ * )
+ */
+class ClassMethodOverrideAnnotationController extends Controller
+{
+    /**
+     * @Validator(
+     *      providerName="default",
+     *      errorActions={
+     *           "@pelso.openapi_validator_bundle.error_action.header_notice"
+     *      }
+     * )
+     *
+     * @return Response
+     */
+    public function postAction(): Response
+    {
+        return new JsonResponse();
+    }
+}

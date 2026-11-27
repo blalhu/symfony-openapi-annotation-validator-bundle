@@ -27,3 +27,9 @@ profile_validator_annotation:
   methods: [ POST ]
   defaults:
     _controller: \Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\Controller\ProfileAnnotationController::postAction
+
+class_method_override_annotation:
+  path: /class_method_override_annotation
+  methods: [ POST ]
+  defaults:
+    _controller: \Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\Controller\ClassMethodOverrideAnnotationController::postAction
