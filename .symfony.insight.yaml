@@ -1,15 +1,14 @@
-# Pelso OpenAPI Validator Bundle
-# Symfony 3.4 / PHP 7.2
-
 php_version: 8.1
+
+ignore_branches:
+    - gh-pages
 
 global_exclude_dirs:
     - vendor
     - vendors
-    - node_modules
-    - Tests
-    - tests
     - test
+    - tests
+    - Tests
     - spec
     - features
     - Fixtures
@@ -18,24 +17,32 @@ global_exclude_dirs:
     - cache
     - logs
     - coverage
-    - build
+    - node_modules
 
 exclude_patterns:
-    - 'var/**'
-    - 'var/phpstan/**'
-    - 'var/phpstan/cache/**'
+    - 'var/*'
+    - 'var/**/*'
     - 'var/phpstan/cache/nette.configurator/*.php'
-    - 'vendor/**'
-    - 'vendors/**'
-    - '**/vendor/**'
-    - '**/vendors/**'
-    - '**/cache/**'
-    - '**/logs/**'
-    - '**/var/**'
-    - 'Tests/**'
-    - 'coverage/**'
-    - '**/coverage/**'
-    - 'build/**'
+
+pre_composer_script: |
+    #!/bin/bash
+    echo "=== BEFORE COMPOSER ==="
+    pwd
+    php -v
+    ls -la
+    find . -type d -name phpstan -print
+
+post_composer_script: |
+    #!/bin/bash
+    echo "=== AFTER COMPOSER ==="
+    pwd
+    ls -la
+    find . -type d -name phpstan -print
+    echo "=== PHPSTAN CACHE ==="
+    if [ -d var/phpstan ]; then
+        find var/phpstan -type f
+    fi
+    echo "=== END DIAGNOSTICS ==="
 
 commit_failure_conditions:
     - "project.severity.critical > 0"
