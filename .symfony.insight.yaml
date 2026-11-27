@@ -1,9 +1,16 @@
 
+# Pelso OpenAPI Validator Bundle
+# Symfony 3.4 / PHP 7.2
+
 php_version: 7.2
 
+working_directory: .
+
+# Exclude third-party, test and generated directories.
 global_exclude_dirs:
     - vendor
     - vendors
+    - node_modules
     - Tests
     - tests
     - test
@@ -15,26 +22,45 @@ global_exclude_dirs:
     - cache
     - logs
     - coverage
+    - build
 
+# Explicit exclusions for generated analysis artifacts
+# and embedded integration test environments.
 exclude_patterns:
-    # Root-level analysis artifacts
+    # PHPStan generated containers and cache
     - 'var/**'
     - 'var/phpstan/**'
     - 'var/phpstan/cache/**'
     - 'var/phpstan/cache/nette.configurator/*.php'
 
-    # Third-party dependencies
+    # Composer dependencies
     - 'vendor/**'
     - 'vendors/**'
+    - '**/vendor/**'
+    - '**/vendors/**'
+
+    # Generated cache and logs
+    - '**/cache/**'
+    - '**/logs/**'
+    - '**/var/**'
+
+    # Integration test environment
     - 'Tests/**/vendor/**'
     - 'Tests/**/vendors/**'
-
-    # Integration test application
+    - 'Tests/**/cache/**'
+    - 'Tests/**/logs/**'
+    - 'Tests/**/var/**'
     - 'Tests/Integration/cache/**'
     - 'Tests/Integration/logs/**'
     - 'Tests/Integration/coverage/**'
     - 'Tests/Unit/coverage/**'
 
+    # Generated reports
+    - 'coverage/**'
+    - '**/coverage/**'
+    - 'build/**'
+
+# Reject critical and major violations.
 commit_failure_conditions:
     - "project.severity.critical > 0"
     - "project.severity.major > 0"
