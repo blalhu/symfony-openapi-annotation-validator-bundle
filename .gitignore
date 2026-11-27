@@ -1,5 +1,6 @@
 /*
 !/.gitignore
+!/.symfony.insight.yaml
 !/CHANGELOG.md
 !/README.md
 !/CONTRIBUTING.md
