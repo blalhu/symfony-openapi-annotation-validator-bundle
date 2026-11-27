@@ -1,7 +1,7 @@
 # Pelso OpenAPI Validator Bundle
 # Symfony 3.4 / PHP 7.2
 
-php_version: 7.2
+php_version: 8.1
 
 global_exclude_dirs:
     - vendor
