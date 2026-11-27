@@ -33,3 +33,10 @@ class_method_override_annotation:
   methods: [ POST ]
   defaults:
     _controller: \Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\Controller\ClassMethodOverrideAnnotationController::postAction
+
+
+exception_action_annotation:
+  path: /exception_action_annotation
+  methods: [ POST ]
+  defaults:
+    _controller: \Pelso\OpenAPIValidatorBundle\Tests\Integration\TestApp\Controller\ExceptionActionController::postAction

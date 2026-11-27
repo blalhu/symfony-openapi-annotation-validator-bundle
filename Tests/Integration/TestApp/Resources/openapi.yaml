@@ -16,6 +16,7 @@ paths:
             - 'validator'
             - 'profile_validator'
             - 'class_method_override'
+            - 'exception_action'
 
     post:
       requestBody:
