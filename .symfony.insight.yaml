@@ -1,7 +1,5 @@
-php_version: 8.1
+php_version: 7.2
 
-ignore_branches:
-    - gh-pages
 
 global_exclude_dirs:
     - vendor
@@ -14,35 +12,8 @@ global_exclude_dirs:
     - Fixtures
     - DataFixtures
     - var
-    - cache
-    - logs
-    - coverage
+    - test_artifacts
     - node_modules
-
-exclude_patterns:
-    - 'var/*'
-    - 'var/**/*'
-    - 'var/phpstan/cache/nette.configurator/*.php'
-
-pre_composer_script: |
-    #!/bin/bash
-    echo "=== BEFORE COMPOSER ==="
-    pwd
-    php -v
-    ls -la
-    find . -type d -name phpstan -print
-
-post_composer_script: |
-    #!/bin/bash
-    echo "=== AFTER COMPOSER ==="
-    pwd
-    ls -la
-    find . -type d -name phpstan -print
-    echo "=== PHPSTAN CACHE ==="
-    if [ -d var/phpstan ]; then
-        find var/phpstan -type f
-    fi
-    echo "=== END DIAGNOSTICS ==="
 
 commit_failure_conditions:
     - "project.severity.critical > 0"

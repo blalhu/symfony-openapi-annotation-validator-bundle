@@ -81,6 +81,14 @@ class TestKernel extends Kernel
             . DIRECTORY_SEPARATOR
             . '..'
             . DIRECTORY_SEPARATOR
+            . '..'
+            . DIRECTORY_SEPARATOR
+            . '..'
+            . DIRECTORY_SEPARATOR
+            . 'test_artifacts'
+            . DIRECTORY_SEPARATOR
+            . 'Integration'
+            . DIRECTORY_SEPARATOR
             . 'cache';
     }
 
@@ -89,6 +97,14 @@ class TestKernel extends Kernel
         return $this->getRootDir()
             . DIRECTORY_SEPARATOR
             . '..'
+            . DIRECTORY_SEPARATOR
+            . '..'
+            . DIRECTORY_SEPARATOR
+            . '..'
+            . DIRECTORY_SEPARATOR
+            . 'test_artifacts'
+            . DIRECTORY_SEPARATOR
+            . 'Integration'
             . DIRECTORY_SEPARATOR
             . 'logs';
     }
